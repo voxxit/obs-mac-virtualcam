@@ -2,14 +2,14 @@
 	    File: CMIO_DPA_Sample_Shared.h
 	Abstract: Items in the CMIO::DPA::Sample namespace shared between the Assistant (the server) and its clients.
 	 Version: 1.2
-	
+
 	Disclaimer: IMPORTANT:  This Apple software is supplied to you by Apple
 	Inc. ("Apple") in consideration of your agreement to the following
 	terms, and your use, installation, modification or redistribution of
 	this Apple software constitutes acceptance of these terms.  If you do
 	not agree with these terms, please do not use, install, modify or
 	redistribute this Apple software.
-	
+
 	In consideration of your agreement to abide by the following terms, and
 	subject to these terms, Apple grants you a personal, non-exclusive
 	license, under Apple's copyrights in this original Apple software (the
@@ -25,13 +25,13 @@
 	implied, are granted by Apple herein, including but not limited to any
 	patent rights that may be infringed by your derivative works or by other
 	works in which the Apple Software may be incorporated.
-	
+
 	The Apple Software is provided by Apple on an "AS IS" basis.  APPLE
 	MAKES NO WARRANTIES, EXPRESS OR IMPLIED, INCLUDING WITHOUT LIMITATION
 	THE IMPLIED WARRANTIES OF NON-INFRINGEMENT, MERCHANTABILITY AND FITNESS
 	FOR A PARTICULAR PURPOSE, REGARDING THE APPLE SOFTWARE OR ITS USE AND
 	OPERATION ALONE OR IN COMBINATION WITH YOUR PRODUCTS.
-	
+
 	IN NO EVENT SHALL APPLE BE LIABLE FOR ANY SPECIAL, INDIRECT, INCIDENTAL
 	OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
 	SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
@@ -40,9 +40,9 @@
 	AND WHETHER UNDER THEORY OF CONTRACT, TORT (INCLUDING NEGLIGENCE),
 	STRICT LIABILITY OR OTHERWISE, EVEN IF APPLE HAS BEEN ADVISED OF THE
 	POSSIBILITY OF SUCH DAMAGE.
-	
+
 	Copyright (C) 2012 Apple Inc. All Rights Reserved.
-	
+
 */
 
 #if !defined(__CMIO_DPA_Sample_Shared_h__)
@@ -76,7 +76,7 @@
 enum
 {
 	kSampleCodecNoFlags                                 = 0,			/*! @constant kSampleCodecNoFlags							no rates supported. */
-	
+
 	kSampleCodecFlags_24fps                             = (1L << 0),	/*! @constant kSampleCodecFlags_24fps		0x00000001  framerate 24fps. */
 	kSampleCodecFlags_25fps                             = (1L << 1),	/*! @constant kSampleCodecFlags_25fps       0x00000002  framerate 25fps. */
 	kSampleCodecFlags_30fps                             = (1L << 2),	/*! @constant kSampleCodecFlags_30fps		0x00000004  framerate 30fps. */
@@ -129,7 +129,7 @@ namespace CMIO { namespace DPA { namespace Sample
 		CMTimeEpoch		epoch;
 	};
 	typedef struct CMTimeOverrideSimple CMTimeOverrideSimple;
-	
+
 	struct CMTimeOverride : public CMTimeOverrideSimple
 	{
 		CMTimeOverride() : CMTimeOverrideSimple() { value = kCMTimeInvalid.value; timescale = kCMTimeInvalid.timescale; flags = kCMTimeInvalid.flags; epoch = kCMTimeInvalid.epoch; }
@@ -138,7 +138,7 @@ namespace CMIO { namespace DPA { namespace Sample
 		CMTimeOverride&	operator=(const CMTime& time) { this->value = time.value; this->timescale = time.timescale; this->flags = time.flags; this->epoch = time.epoch; return *this; }
         operator			CMTime() const { CMTime time; time.value = this->value; time.timescale = this->timescale; time.flags = this->flags; time.epoch = this->epoch; return time;}
 	};
-	
+
 	#pragma mark FrameType
 	//-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 	// FrameType
@@ -175,7 +175,7 @@ namespace CMIO { namespace DPA { namespace Sample
 		public:
 					Equal(FrameType frameType) : mFrameType(frameType) {};
 			bool	operator()(const FrameFormat& frameFormat) const { return frameFormat.mFrameType == mFrameType; }
-		
+
 		private:
 					UInt64 mFrameType;
 		};
@@ -194,15 +194,15 @@ namespace CMIO { namespace DPA { namespace Sample
 				{
 					if (x.mWidth == y.mWidth)
 						return x.mHeight < y.mHeight;
-						
+
 					return x.mWidth < y.mWidth;
 				}
-				
+
 				// The codec types are NOT equal, so  have "less" be determined by the sorting of the codec type
 				return x.mCodecType < y.mCodecType;
 			}
 		};
-		
+
 		//	Construction/Destruction
 		FrameFormat() { memset(this, 0, sizeof(FrameFormat)); }
 		FrameFormat(FrameType frameType, CMVideoCodecType codecType, SInt32 width, SInt32 height) { mFrameType = frameType; mCodecType = codecType; mWidth = width; mHeight = height; }
@@ -224,7 +224,7 @@ namespace CMIO { namespace DPA { namespace Sample
 		UInt64		mGUID;								// The GUID of the device
         Boolean     mIsIOBacked;                        // Whether the device is backed by an IOKit object
                                                         // If not, mRegistryPath may be invalid
-		io_string_t	mRegistryPath;						// The registry path for the device 
+		io_string_t	mRegistryPath;						// The registry path for the device
 	};
 	typedef DeviceState* DeviceStatePtr;				// A typedef'd pointer for use by MIG
 
@@ -254,7 +254,7 @@ namespace CMIO { namespace DPA { namespace Sample
 		kPropertyStatesChanged,							// Properties have changed
 		kFrameArrived,									// A video frame arrived
 		kOutputBufferRequested,							// An output buffer is needed for the device to transmit
-		kOutputBufferSupplied,							// An output buffer is supplied 
+		kOutputBufferSupplied,							// An output buffer is supplied
 		kOutputSurfaceSupplied,							// An output surface is supplied
 		kNoOutputBufferSupplied							// No output buffer is avaialble
 	};
@@ -348,7 +348,7 @@ namespace CMIO { namespace DPA { namespace Sample
 	struct NoOutputBufferSuppliedMessage
 	{
 		mach_msg_header_t				mHeader;				// Standard Mach message header
-	};	
+	};
 	//
 	// OutputBufferMessages
 	//	A union of the different types of output buffer request and supplied messages
@@ -359,7 +359,7 @@ namespace CMIO { namespace DPA { namespace Sample
 		struct OutputSurfaceSuppliedMessage		asOutputSurfaceSuppliedMessage;
 		struct NoOutputBufferSuppliedMessage	asNoOutputBufferSuppliedMessage;
 	};
-	
+
 
 }}}
 #pragma pack(pop)

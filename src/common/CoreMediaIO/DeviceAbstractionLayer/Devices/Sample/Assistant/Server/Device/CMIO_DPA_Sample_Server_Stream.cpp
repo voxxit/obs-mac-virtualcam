@@ -2,14 +2,14 @@
 	    File: CMIO_DPA_Sample_Server_Stream.cpp
 	Abstract: n/a
 	 Version: 1.2
-	
+
 	Disclaimer: IMPORTANT:  This Apple software is supplied to you by Apple
 	Inc. ("Apple") in consideration of your agreement to the following
 	terms, and your use, installation, modification or redistribution of
 	this Apple software constitutes acceptance of these terms.  If you do
 	not agree with these terms, please do not use, install, modify or
 	redistribute this Apple software.
-	
+
 	In consideration of your agreement to abide by the following terms, and
 	subject to these terms, Apple grants you a personal, non-exclusive
 	license, under Apple's copyrights in this original Apple software (the
@@ -25,13 +25,13 @@
 	implied, are granted by Apple herein, including but not limited to any
 	patent rights that may be infringed by your derivative works or by other
 	works in which the Apple Software may be incorporated.
-	
+
 	The Apple Software is provided by Apple on an "AS IS" basis.  APPLE
 	MAKES NO WARRANTIES, EXPRESS OR IMPLIED, INCLUDING WITHOUT LIMITATION
 	THE IMPLIED WARRANTIES OF NON-INFRINGEMENT, MERCHANTABILITY AND FITNESS
 	FOR A PARTICULAR PURPOSE, REGARDING THE APPLE SOFTWARE OR ITS USE AND
 	OPERATION ALONE OR IN COMBINATION WITH YOUR PRODUCTS.
-	
+
 	IN NO EVENT SHALL APPLE BE LIABLE FOR ANY SPECIAL, INDIRECT, INCIDENTAL
 	OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
 	SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
@@ -40,9 +40,9 @@
 	AND WHETHER UNDER THEORY OF CONTRACT, TORT (INCLUDING NEGLIGENCE),
 	STRICT LIABILITY OR OTHERWISE, EVEN IF APPLE HAS BEEN ADVISED OF THE
 	POSSIBILITY OF SUCH DAMAGE.
-	
+
 	Copyright (C) 2012 Apple Inc. All Rights Reserved.
-	
+
 */
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -104,7 +104,7 @@ namespace CMIO { namespace DPA { namespace Sample { namespace Server
 		mEndOfData(false),
 		mUnderrunCount(0),
 		mFrameFormats(),
-		mFrameType(kYUV422_10_720x486),
+		mFrameType(kYUV422_10_1920x1080),
 		mFrameRatesMap(),
 		mFrameRate(30000.0 / 1001.0),
 		mNominalFrameDuration(CMTimeMake(1001, 30000)),
@@ -122,16 +122,16 @@ namespace CMIO { namespace DPA { namespace Sample { namespace Server
 		{
 			// This stream only has a single format that provides frames @ 29.97 fps.
 			// (Note:  this should really be extracted from the the stream dictionary)
-			
+
 			// Get the available format list from the the dictionary
 			CACFArray formatList = CACFArray(static_cast<CFArrayRef>(CFDictionaryGetValue(mStreamDictionary.GetCFDictionary(), CFSTR(kIOVideoStreamKey_AvailableFormats))), false);
 			UInt32 formatCount = formatList.GetNumberItems();
-			
+
 			for (UInt32 index = 0 ; index < formatCount ; ++index)
 			{
 				// Get the control dictionary
 				CFDictionaryRef	formatDictionary = NULL;
-				
+
 				if (formatList.GetDictionary(index, formatDictionary))
 				{
 					CACFDictionary formatCACFDictionary = CACFDictionary(formatDictionary, false);
@@ -142,7 +142,7 @@ namespace CMIO { namespace DPA { namespace Sample { namespace Server
 						formatCACFDictionary.GetUInt32(CFSTR(kIOVideoStreamFormatKey_CodecFlags), codecFlags);
 						formatCACFDictionary.GetUInt32(CFSTR(kIOVideoStreamFormatKey_Width), formatWidth);
 						formatCACFDictionary.GetUInt32(CFSTR(kIOVideoStreamFormatKey_Height), formatHeight);
-						
+
 						switch (codecType)
 						{
 							case kYUV422_720x480:
@@ -164,11 +164,11 @@ namespace CMIO { namespace DPA { namespace Sample { namespace Server
 							}
 								break;
 						}
-						
+
 					}
 				}
 			}
-			
+
 			mProperties[PropertyAddress(kCMIOStreamPropertyFormatDescriptions, GetDevicePropertyScope(), element)].mShadowTime = shadowTime;
 			mProperties[PropertyAddress(kCMIOStreamPropertyFormatDescription, GetDevicePropertyScope(), element)].mShadowTime = shadowTime;
 			mProperties[PropertyAddress(kCMIOStreamPropertyFrameRates, GetDevicePropertyScope(), element)].mShadowTime = shadowTime;
@@ -176,7 +176,7 @@ namespace CMIO { namespace DPA { namespace Sample { namespace Server
 			mProperties[PropertyAddress(kCMIOStreamPropertyNoDataTimeoutInMSec, GetDevicePropertyScope(), element)].mShadowTime = shadowTime;
 			mProperties[PropertyAddress(kCMIOStreamPropertyNoDataEventCount, GetDevicePropertyScope(), element)].mShadowTime = shadowTime;
 			mProperties[PropertyAddress(kCMIOStreamPropertyDeviceSyncTimeoutInMSec, GetDevicePropertyScope(), element)].mShadowTime = shadowTime;
-			
+
 			mProperties[PropertyAddress(kCMIOStreamPropertyDeckFrameNumber, GetDevicePropertyScope(), element)].mShadowTime = shadowTime;
 			mProperties[PropertyAddress(kCMIOStreamPropertyDeck, GetDevicePropertyScope(), element)].mShadowTime = shadowTime;
 			mProperties[PropertyAddress(kCMIOStreamPropertyDeckCueing, GetDevicePropertyScope(), element)].mShadowTime = shadowTime;
@@ -186,12 +186,12 @@ namespace CMIO { namespace DPA { namespace Sample { namespace Server
 			// (Note:  this should really be extracted from the the stream dictionary)
 			CACFArray formatList = CACFArray(static_cast<CFArrayRef>(CFDictionaryGetValue(mStreamDictionary.GetCFDictionary(), CFSTR(kIOVideoStreamKey_AvailableFormats))), false);
 			UInt32 formatCount = formatList.GetNumberItems();
-			
+
 			for (UInt32 index = 0 ; index < formatCount ; ++index)
 			{
 				// Get the control dictionary
 				CFDictionaryRef	formatDictionary = NULL;
-				
+
 				if (formatList.GetDictionary(index, formatDictionary))
 				{
 					CACFDictionary formatCACFDictionary = CACFDictionary(formatDictionary, false);
@@ -199,7 +199,7 @@ namespace CMIO { namespace DPA { namespace Sample { namespace Server
 					{
 						UInt32 codecType, codecFlags, formatWidth, formatHeight;
                         std::set<FrameFormat>::iterator it;
-                        
+
 						formatCACFDictionary.GetUInt32(CFSTR(kIOVideoStreamFormatKey_CodecType), codecType);
 						formatCACFDictionary.GetUInt32(CFSTR(kIOVideoStreamFormatKey_CodecFlags), codecFlags);
 						formatCACFDictionary.GetUInt32(CFSTR(kIOVideoStreamFormatKey_Width), formatWidth);
@@ -213,7 +213,7 @@ namespace CMIO { namespace DPA { namespace Sample { namespace Server
                             case kYUV422_1920x1080:
 							{
                                 it = mFrameFormats.find(FrameFormat((CMIO::DPA::Sample::FrameType)codecType, kCMVideoCodecType_422YpCbCr8, formatWidth, formatHeight));
-                               
+
 							}
 								break;
                             case kYUV422_10_720x480:
@@ -223,10 +223,10 @@ namespace CMIO { namespace DPA { namespace Sample { namespace Server
                             case kYUV422_10_1920x1080:
 							{
                                 it = mFrameFormats.find(FrameFormat((CMIO::DPA::Sample::FrameType)codecType, kCMPixelFormat_422YpCbCr10, formatWidth, formatHeight));
-                                
+
                             }
                                 break;
-                               
+
                         }
                         if (it !=mFrameFormats.end())
                         {
@@ -237,54 +237,54 @@ namespace CMIO { namespace DPA { namespace Sample { namespace Server
                                 case 60:
                                 {
                                     mFrameRatesMap[(CMIO::DPA::Sample::FrameType)codecType][(60000.0 / 1000.0)] = CMTimeMake(1000, 60000);
-                                    mNominalFrameDuration = CMTimeMake(1000, 60000); 
+                                    mNominalFrameDuration = CMTimeMake(1000, 60000);
                                 }
                                 break;
                                 case 59:
                                 {
                                     mFrameRatesMap[(CMIO::DPA::Sample::FrameType)codecType][(60000.0 / 1001.0)] = CMTimeMake(1001, 60000);
-                                    mNominalFrameDuration = CMTimeMake(1001, 60000); 
+                                    mNominalFrameDuration = CMTimeMake(1001, 60000);
                                 }
                                     break;
                                 case 50:
                                 {
                                     mFrameRatesMap[(CMIO::DPA::Sample::FrameType)codecType][(5000.0 / 100.0)] = CMTimeMake(100, 5000);
-                                    mNominalFrameDuration = CMTimeMake(100, 5000); 
+                                    mNominalFrameDuration = CMTimeMake(100, 5000);
                                 }
                                     break;
                                 case 30:
                                 {
                                     mFrameRatesMap[(CMIO::DPA::Sample::FrameType)codecType][(30000.0 / 1000.0)] = CMTimeMake(1000, 30000);
-                                    mNominalFrameDuration = CMTimeMake(1000, 30000); 
+                                    mNominalFrameDuration = CMTimeMake(1000, 30000);
                                  }
                                     break;
                                 case 29:
                                 {
                                     mFrameRatesMap[(CMIO::DPA::Sample::FrameType)codecType][(30000.0 / 1001.0)] = CMTimeMake(1001, 30000);
-                                    mNominalFrameDuration = CMTimeMake(1001, 30000); 
+                                    mNominalFrameDuration = CMTimeMake(1001, 30000);
                                 }
                                     break;
                                 case 25:
                                 {
                                     mFrameRatesMap[(CMIO::DPA::Sample::FrameType)codecType][(2500.0 / 100.0)] = CMTimeMake(100, 2500);
-                                    mNominalFrameDuration = CMTimeMake(100, 2500); 
+                                    mNominalFrameDuration = CMTimeMake(100, 2500);
                                 }
                                     break;
                                 case 24:
                                 {
                                     mFrameRatesMap[(CMIO::DPA::Sample::FrameType)codecType][(24000.0 / 1000.0)] = CMTimeMake(1000, 24000);
-                                    mNominalFrameDuration = CMTimeMake(1000, 24000); 
+                                    mNominalFrameDuration = CMTimeMake(1000, 24000);
                                 }
                                     break;
                                 case 23:
                                 {
                                     mFrameRatesMap[(CMIO::DPA::Sample::FrameType)codecType][(24000.0 / 1001.0)] = CMTimeMake(1001, 24000);
-                                    mNominalFrameDuration = CMTimeMake(1001, 24000); 
+                                    mNominalFrameDuration = CMTimeMake(1001, 24000);
                                 }
                                     break;
-                                    
+
                             }
-                           
+
                         }
                         else
                         {
@@ -297,7 +297,7 @@ namespace CMIO { namespace DPA { namespace Sample { namespace Server
                                 case kYUV422_1920x1080:
                                 {
                                     mFrameFormats.insert(FrameFormat((CMIO::DPA::Sample::FrameType)codecType, kCMVideoCodecType_422YpCbCr8, formatWidth, formatHeight));
-                                    
+
                                 }
                                     break;
                                 case kYUV422_10_720x480:
@@ -306,12 +306,12 @@ namespace CMIO { namespace DPA { namespace Sample { namespace Server
                                 case kYUV422_10_1280x720:
                                 case kYUV422_10_1920x1080:
                                 {
-                                    mFrameFormats.insert(FrameFormat((CMIO::DPA::Sample::FrameType)codecType, kCMPixelFormat_422YpCbCr10, formatWidth, formatHeight));                                    
+                                    mFrameFormats.insert(FrameFormat((CMIO::DPA::Sample::FrameType)codecType, kCMPixelFormat_422YpCbCr10, formatWidth, formatHeight));
                                 }
                                     break;
-                                    
+
                             }
-                            
+
                             Float64 frameRate = CodecFlagsToFrameRate(codecFlags);
                             int frameRateInt = frameRate;
                             switch(frameRateInt)
@@ -319,52 +319,52 @@ namespace CMIO { namespace DPA { namespace Sample { namespace Server
                                 case 60:
                                 {
                                     mFrameRatesMap[(CMIO::DPA::Sample::FrameType)codecType][(60000.0 / 1000.0)] = CMTimeMake(1000, 60000);
-                                    mNominalFrameDuration = CMTimeMake(1000, 60000); 
+                                    mNominalFrameDuration = CMTimeMake(1000, 60000);
                                 }
                                     break;
                                 case 59:
                                 {
                                     mFrameRatesMap[(CMIO::DPA::Sample::FrameType)codecType][(60000.0 / 1001.0)] = CMTimeMake(1001, 60000);
-                                    mNominalFrameDuration = CMTimeMake(1001, 60000); 
+                                    mNominalFrameDuration = CMTimeMake(1001, 60000);
                                 }
                                     break;
                                 case 50:
                                 {
                                     mFrameRatesMap[(CMIO::DPA::Sample::FrameType)codecType][(5000.0 / 100.0)] = CMTimeMake(100, 5000);
-                                    mNominalFrameDuration = CMTimeMake(100, 5000); 
+                                    mNominalFrameDuration = CMTimeMake(100, 5000);
                                 }
                                     break;
                                 case 30:
                                 {
                                     mFrameRatesMap[(CMIO::DPA::Sample::FrameType)codecType][(30000.0 / 1000.0)] = CMTimeMake(1000, 30000);
-                                    mNominalFrameDuration = CMTimeMake(1000, 30000); 
+                                    mNominalFrameDuration = CMTimeMake(1000, 30000);
                                 }
                                     break;
                                 case 29:
                                 {
                                     mFrameRatesMap[(CMIO::DPA::Sample::FrameType)codecType][(30000.0 / 1001.0)] = CMTimeMake(1001, 30000);
-                                    mNominalFrameDuration = CMTimeMake(1001, 30000); 
+                                    mNominalFrameDuration = CMTimeMake(1001, 30000);
                                 }
                                     break;
                                 case 25:
                                 {
                                     mFrameRatesMap[(CMIO::DPA::Sample::FrameType)codecType][(2500.0 / 100.0)] = CMTimeMake(100, 2500);
-                                    mNominalFrameDuration = CMTimeMake(100, 2500); 
+                                    mNominalFrameDuration = CMTimeMake(100, 2500);
                                 }
                                     break;
                                 case 24:
                                 {
                                     mFrameRatesMap[(CMIO::DPA::Sample::FrameType)codecType][(24000.0 / 1000.0)] = CMTimeMake(1000, 24000);
-                                    mNominalFrameDuration = CMTimeMake(1000, 24000); 
+                                    mNominalFrameDuration = CMTimeMake(1000, 24000);
                                 }
                                     break;
                                 case 23:
                                 {
                                     mFrameRatesMap[(CMIO::DPA::Sample::FrameType)codecType][(24000.0 / 1001.0)] = CMTimeMake(1001, 24000);
-                                    mNominalFrameDuration = CMTimeMake(1001, 24000); 
+                                    mNominalFrameDuration = CMTimeMake(1001, 24000);
                                 }
                                     break;
-                                    
+
                             }
                         }
 					}
@@ -382,7 +382,7 @@ namespace CMIO { namespace DPA { namespace Sample { namespace Server
 			mProperties[PropertyAddress(kCMIOStreamPropertyOutputBufferRepeatCount, GetDevicePropertyScope(), element)].mShadowTime = shadowTime;
 		}
 	}
-	
+
 	//-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 	// ~Stream()
 	//-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -409,7 +409,7 @@ namespace CMIO { namespace DPA { namespace Sample { namespace Server
 		#warning CMIO::DPA::Sample::Server::Stream::GetCurrentNumberChannels() should decided how to report multiple channels...currently always reporting 1
 		return 1;
 	}
-	
+
 	#pragma mark -
 	//-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 	// GetProperties()
@@ -419,7 +419,7 @@ namespace CMIO { namespace DPA { namespace Sample { namespace Server
 		// Iterate over the properties and check for matches
 		for (Properties::const_iterator i = mProperties.begin() ; i != mProperties.end() ; std::advance(i, 1))
 		{
-			// Skip the address if its shadow time is less than the indicated time or the addresses are not congruent 
+			// Skip the address if its shadow time is less than the indicated time or the addresses are not congruent
 			if (((*i).second.mShadowTime < time) or (not PropertyAddress::IsCongruentAddress(matchAddress, (*i).first)))
 				continue;
 
@@ -436,7 +436,7 @@ namespace CMIO { namespace DPA { namespace Sample { namespace Server
 		// Don't do anything if there are no changes
 		if (noDataTimeout == mNoDataTimeout)
 			return;
-			
+
 		mProperties[PropertyAddress(kCMIOStreamPropertyNoDataTimeoutInMSec, GetDevicePropertyScope(), GetStartingDeviceChannelNumber())].mShadowTime = CAHostTimeBase::GetTheCurrentTime();
 		mNoDataTimeout = noDataTimeout;
 	}
@@ -449,9 +449,9 @@ namespace CMIO { namespace DPA { namespace Sample { namespace Server
 		// Don't do anything if there are no changes
 		if (deviceSyncTimeout == mDeviceSyncTimeout)
 			return;
-			
+
 		mProperties[PropertyAddress(kCMIOStreamPropertyDeviceSyncTimeoutInMSec, GetDevicePropertyScope(), GetStartingDeviceChannelNumber())].mShadowTime = CAHostTimeBase::GetTheCurrentTime();
-		mDeviceSyncTimeout = deviceSyncTimeout;	
+		mDeviceSyncTimeout = deviceSyncTimeout;
 		mDeviceSyncTimeoutChanged = true;
 	}
 
@@ -463,7 +463,7 @@ namespace CMIO { namespace DPA { namespace Sample { namespace Server
 		// Don't do anything if there are no changes
 		if (endOfData == mEndOfData)
 			return;
-			
+
 		mProperties[PropertyAddress(kCMIOStreamPropertyEndOfData, GetDevicePropertyScope(), GetStartingDeviceChannelNumber())].mShadowTime = CAHostTimeBase::GetTheCurrentTime();
 		mEndOfData = endOfData;
 	}
@@ -473,7 +473,7 @@ namespace CMIO { namespace DPA { namespace Sample { namespace Server
     UInt32  Stream::FrameRateToCodecFlags(Float64 framerate)
     {
         UInt32 codecFlags = 0;
-        
+
         if (framerate > 0.0)
         {
             UInt32 intFrameRate = framerate;
@@ -481,44 +481,44 @@ namespace CMIO { namespace DPA { namespace Sample { namespace Server
             {
                 case 60:
                 {
-                    codecFlags = kSampleCodecFlags_60fps; 
+                    codecFlags = kSampleCodecFlags_60fps;
                 }
                     break;
                 case 59:
                 {
-                    codecFlags = kSampleCodecFlags_60fps + kSampleCodecFlags_1001_1000_adjust; 
+                    codecFlags = kSampleCodecFlags_60fps + kSampleCodecFlags_1001_1000_adjust;
                  }
                     break;
                 case 50:
                 {
-                    codecFlags = kSampleCodecFlags_50fps; 
+                    codecFlags = kSampleCodecFlags_50fps;
                 }
                     break;
                 case 30:
                 {
-                    codecFlags = kSampleCodecFlags_30fps; 
+                    codecFlags = kSampleCodecFlags_30fps;
                 }
                     break;
                case 29:
                 {
-                    codecFlags = kSampleCodecFlags_30fps + kSampleCodecFlags_1001_1000_adjust; 
+                    codecFlags = kSampleCodecFlags_30fps + kSampleCodecFlags_1001_1000_adjust;
                  }
                     break;
                case 25:
                 {
-                    codecFlags = kSampleCodecFlags_25fps; 
+                    codecFlags = kSampleCodecFlags_25fps;
                 }
                     break;
                 case 24:
                 {
-                    codecFlags = kSampleCodecFlags_24fps; 
+                    codecFlags = kSampleCodecFlags_24fps;
                 }
                     break;
                 case 23:
                 {
-                    codecFlags = kSampleCodecFlags_24fps + kSampleCodecFlags_1001_1000_adjust; 
+                    codecFlags = kSampleCodecFlags_24fps + kSampleCodecFlags_1001_1000_adjust;
                 }
-                    break;                    
+                    break;
             }
         }
         return codecFlags;
@@ -527,55 +527,55 @@ namespace CMIO { namespace DPA { namespace Sample { namespace Server
     Float64 Stream::CodecFlagsToFrameRate(UInt32 codecFlags)
     {
         Float64 frameRate= 0.0;
-        
+
         switch(codecFlags)
         {
             case kSampleCodecFlags_60fps:
             {
-                frameRate = 60.0; 
+                frameRate = 60.0;
             }
                 break;
             case kSampleCodecFlags_60fps+kSampleCodecFlags_1001_1000_adjust:
             {
-                frameRate = 60.0*1000/1001; 
+                frameRate = 60.0*1000/1001;
             }
                 break;
             case kSampleCodecFlags_50fps:
             {
-                frameRate = 50.0; 
+                frameRate = 50.0;
             }
                 break;
             case kSampleCodecFlags_30fps:
             {
-                frameRate = 30.0; 
+                frameRate = 30.0;
             }
                 break;
             case kSampleCodecFlags_30fps+kSampleCodecFlags_1001_1000_adjust:
             {
-                frameRate = 30.0*1000/1001; 
+                frameRate = 30.0*1000/1001;
             }
                 break;
             case kSampleCodecFlags_25fps:
             {
-                frameRate = 25.0; 
+                frameRate = 25.0;
             }
                 break;
             case kSampleCodecFlags_24fps:
             {
-                frameRate = 24.0; 
+                frameRate = 24.0;
             }
                 break;
             case kSampleCodecFlags_24fps+kSampleCodecFlags_1001_1000_adjust:
             {
-                frameRate = 24.0*1000/1001; 
+                frameRate = 24.0*1000/1001;
             }
-                break;                    
+                break;
         }
-       
+
         return frameRate;
     }
 
-	
+
 	//-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 	// GetFrameFormats()
 	//-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -588,7 +588,7 @@ namespace CMIO { namespace DPA { namespace Sample { namespace Server
 		int index = 0;
 		for (FrameFormats::const_iterator i = mFrameFormats.begin() ; i != mFrameFormats.end() ; ++i)
 			(*formats)[index++] = *i;
-			
+
 		return size;
 	}
 
@@ -601,29 +601,29 @@ namespace CMIO { namespace DPA { namespace Sample { namespace Server
 		// No need to do anything if the frame type hasn't changed
 		if (frameType == mFrameType)
 			return;
-			
+
 		// Grab the mutex for the overall device's state
 		CAMutex::Locker locker(mStateMutex);
-		
+
 		// Program the device settings (which starts the stream) if currently streaming
 		bool programSettings = mStreaming;
-		
+
 		// Stop the stream if needed
 		if (mStreaming)
 		{
 			Stop(MACH_PORT_NULL);
 		}
-		
+
 		// Save the current frame type & frame rate control in the event of an error so a restore attempt can be made
 		FrameType currentFrameType = mFrameType;
 		Float64 currentFrameRate = mFrameRate;
-		
+
 
         FrameRates::const_iterator i = mFrameRatesMap[frameType].find(mFrameRate);
         if (i == mFrameRatesMap[frameType].end())
         {
             //the new frametype doesn't have the existing frame rate so grab the fastest
-            mFrameRate = (*mFrameRatesMap[frameType].rbegin()).first;           
+            mFrameRate = (*mFrameRatesMap[frameType].rbegin()).first;
         }
 		// Remember the new frame type
 		mFrameType = frameType;
@@ -631,7 +631,7 @@ namespace CMIO { namespace DPA { namespace Sample { namespace Server
 
 		// Set the frame rate to the fastest possible for this frame type
 //		mFrameRate = (*mFrameRatesMap[mFrameType].rbegin()).first;
-		
+
 		if (programSettings)
 		{
 			try
@@ -642,88 +642,88 @@ namespace CMIO { namespace DPA { namespace Sample { namespace Server
 				switch(mFrameType)
 				{
 					case kYUV422_720x480:
-						theNewFormat.mVideoCodecType = kYUV422_720x480; 
+						theNewFormat.mVideoCodecType = kYUV422_720x480;
 						theNewFormat.mVideoCodecFlags = FrameRateToCodecFlags(mFrameRate);
 						theNewFormat.mWidth = 720;
 						theNewFormat.mHeight = 480;
 						break;
 
 					case kYUV422_720x486:
-						theNewFormat.mVideoCodecType = kYUV422_720x486; 
+						theNewFormat.mVideoCodecType = kYUV422_720x486;
 						theNewFormat.mVideoCodecFlags = FrameRateToCodecFlags(mFrameRate);
 						theNewFormat.mWidth = 720;
 						theNewFormat.mHeight = 486;
 						break;
-                        
+
 					case kYUV422_720x576:
-						theNewFormat.mVideoCodecType = kYUV422_720x576; 
+						theNewFormat.mVideoCodecType = kYUV422_720x576;
 						theNewFormat.mVideoCodecFlags = FrameRateToCodecFlags(mFrameRate);
 						theNewFormat.mWidth = 720;
 						theNewFormat.mHeight = 576;
 						break;
 
 					case kYUV422_1280x720:
-						theNewFormat.mVideoCodecType = kYUV422_1280x720; 
+						theNewFormat.mVideoCodecType = kYUV422_1280x720;
 						theNewFormat.mVideoCodecFlags = FrameRateToCodecFlags(mFrameRate);
 						theNewFormat.mWidth = 1280;
 						theNewFormat.mHeight = 720;
 						break;
-				
+
 					case kYUV422_1920x1080:
-						theNewFormat.mVideoCodecType = kYUV422_1920x1080; 
+						theNewFormat.mVideoCodecType = kYUV422_1920x1080;
 						theNewFormat.mVideoCodecFlags = FrameRateToCodecFlags(mFrameRate);
 						theNewFormat.mWidth = 1920;
 						theNewFormat.mHeight = 1080;
 						break;
 
                     case kYUV422_10_720x480:
-						theNewFormat.mVideoCodecType = kYUV422_10_720x480; 
+						theNewFormat.mVideoCodecType = kYUV422_10_720x480;
 						theNewFormat.mVideoCodecFlags = FrameRateToCodecFlags(mFrameRate);
 						theNewFormat.mWidth = 720;
 						theNewFormat.mHeight = 480;
 						break;
-                        
+
 					case kYUV422_10_720x486:
-						theNewFormat.mVideoCodecType = kYUV422_10_720x486; 
+						theNewFormat.mVideoCodecType = kYUV422_10_720x486;
 						theNewFormat.mVideoCodecFlags = FrameRateToCodecFlags(mFrameRate);
 						theNewFormat.mWidth = 720;
 						theNewFormat.mHeight = 486;
 						break;
-                        
+
 					case kYUV422_10_720x576:
-						theNewFormat.mVideoCodecType = kYUV422_10_720x576; 
+						theNewFormat.mVideoCodecType = kYUV422_10_720x576;
 						theNewFormat.mVideoCodecFlags = FrameRateToCodecFlags(mFrameRate);
 						theNewFormat.mWidth = 720;
 						theNewFormat.mHeight = 576;
 						break;
-                        
+
 					case kYUV422_10_1280x720:
-						theNewFormat.mVideoCodecType = kYUV422_10_1280x720; 
+						theNewFormat.mVideoCodecType = kYUV422_10_1280x720;
 						theNewFormat.mVideoCodecFlags = FrameRateToCodecFlags(mFrameRate);
 						theNewFormat.mWidth = 1280;
 						theNewFormat.mHeight = 720;
 						break;
-						
+
 					case kYUV422_10_1920x1080:
-						theNewFormat.mVideoCodecType = kYUV422_10_1920x1080; 
+						theNewFormat.mVideoCodecType = kYUV422_10_1920x1080;
 						theNewFormat.mVideoCodecFlags = FrameRateToCodecFlags(mFrameRate);
 						theNewFormat.mWidth = 1920;
 						theNewFormat.mHeight = 1080;
 						break;
-						
+
 					default:
 						DebugMessage("Stream::SetFrameType: Unknown FrameType %lu", (unsigned long int) mFrameType);
 						throw CAException(kCMIOHardwareIllegalOperationError);
 				}
-				
+
 				SetStreamFormat(&theNewFormat);
 
 				// Start the stream
 				Start(MACH_PORT_NULL, MACH_PORT_NULL, kCMIOSampleBufferDiscontinuityFlag_DataFormatChanged);
-				
+
 				// Update the shadow time for the format description since it changed
 				mProperties[PropertyAddress(kCMIOStreamPropertyFormatDescription, GetDevicePropertyScope(), GetStartingDeviceChannelNumber())].mShadowTime = CAHostTimeBase::GetTheCurrentTime();
-				
+
 				// Update the shadow time for the frame rate if it is different
 				if (mFrameRate != currentFrameRate)
 					mProperties[PropertyAddress(kCMIOStreamPropertyFrameRate, GetDevicePropertyScope(), GetStartingDeviceChannelNumber())].mShadowTime = CAHostTimeBase::GetTheCurrentTime();
@@ -734,7 +734,7 @@ namespace CMIO { namespace DPA { namespace Sample { namespace Server
 				mFrameType = currentFrameType;
 				mFrameRate = currentFrameRate;
                 mNominalFrameDuration = mFrameRatesMap[mFrameType][mFrameRate];
-				
+
 				// DoWhatYouWouldNeedToDoToProgramTheHardware();
 
 				// Start the stream
@@ -752,85 +752,85 @@ namespace CMIO { namespace DPA { namespace Sample { namespace Server
 				switch(mFrameType)
 				{
 					case kYUV422_720x480:
-						theNewFormat.mVideoCodecType = kYUV422_720x480; 
+						theNewFormat.mVideoCodecType = kYUV422_720x480;
 						theNewFormat.mVideoCodecFlags = FrameRateToCodecFlags(mFrameRate);
 						theNewFormat.mWidth = 720;
 						theNewFormat.mHeight = 480;
 						break;
-					
+
 					case kYUV422_720x486:
-						theNewFormat.mVideoCodecType = kYUV422_720x486; 
+						theNewFormat.mVideoCodecType = kYUV422_720x486;
 						theNewFormat.mVideoCodecFlags = FrameRateToCodecFlags(mFrameRate);
 						theNewFormat.mWidth = 720;
 						theNewFormat.mHeight = 486;
 						break;
-                        
+
 					case kYUV422_720x576:
-						theNewFormat.mVideoCodecType = kYUV422_720x576; 
+						theNewFormat.mVideoCodecType = kYUV422_720x576;
 						theNewFormat.mVideoCodecFlags = FrameRateToCodecFlags(mFrameRate);
 						theNewFormat.mWidth = 720;
 						theNewFormat.mHeight = 576;
 						break;
-                        
+
 					case kYUV422_1280x720:
-						theNewFormat.mVideoCodecType = kYUV422_1280x720; 
+						theNewFormat.mVideoCodecType = kYUV422_1280x720;
 						theNewFormat.mVideoCodecFlags = FrameRateToCodecFlags(mFrameRate);
 						theNewFormat.mWidth = 1280;
 						theNewFormat.mHeight = 720;
 						break;
-						
+
 					case kYUV422_1920x1080:
-						theNewFormat.mVideoCodecType = kYUV422_1920x1080; 
+						theNewFormat.mVideoCodecType = kYUV422_1920x1080;
 						theNewFormat.mVideoCodecFlags = FrameRateToCodecFlags(mFrameRate);
 						theNewFormat.mWidth = 1920;
 						theNewFormat.mHeight = 1080;
 						break;
 
                     case kYUV422_10_720x480:
-						theNewFormat.mVideoCodecType = kYUV422_10_720x480; 
+						theNewFormat.mVideoCodecType = kYUV422_10_720x480;
 						theNewFormat.mVideoCodecFlags = FrameRateToCodecFlags(mFrameRate);
 						theNewFormat.mWidth = 720;
 						theNewFormat.mHeight = 480;
 						break;
-                        
+
 					case kYUV422_10_720x486:
-						theNewFormat.mVideoCodecType = kYUV422_10_720x486; 
+						theNewFormat.mVideoCodecType = kYUV422_10_720x486;
 						theNewFormat.mVideoCodecFlags = FrameRateToCodecFlags(mFrameRate);
 						theNewFormat.mWidth = 720;
 						theNewFormat.mHeight = 486;
 						break;
-                        
+
 					case kYUV422_10_720x576:
-						theNewFormat.mVideoCodecType = kYUV422_10_720x576; 
+						theNewFormat.mVideoCodecType = kYUV422_10_720x576;
 						theNewFormat.mVideoCodecFlags = FrameRateToCodecFlags(mFrameRate);
 						theNewFormat.mWidth = 720;
 						theNewFormat.mHeight = 576;
 						break;
-                        
+
 					case kYUV422_10_1280x720:
-						theNewFormat.mVideoCodecType = kYUV422_10_1280x720; 
+						theNewFormat.mVideoCodecType = kYUV422_10_1280x720;
 						theNewFormat.mVideoCodecFlags = FrameRateToCodecFlags(mFrameRate);
 						theNewFormat.mWidth = 1280;
 						theNewFormat.mHeight = 720;
 						break;
-						
+
 					case kYUV422_10_1920x1080:
-						theNewFormat.mVideoCodecType = kYUV422_10_1920x1080; 
+						theNewFormat.mVideoCodecType = kYUV422_10_1920x1080;
 						theNewFormat.mVideoCodecFlags = FrameRateToCodecFlags(mFrameRate);
 						theNewFormat.mWidth = 1920;
 						theNewFormat.mHeight = 1080;
 						break;
-						
+
 					default:
 						DebugMessage("Stream::SetFrameType: Unknown FrameType %lu", (unsigned long int) mFrameType);
 						throw CAException(kCMIOHardwareIllegalOperationError);
 				}
-				
+
 				SetStreamFormat(&theNewFormat);
 
 				// Update the shadow time for the format description since it changed
 				mProperties[PropertyAddress(kCMIOStreamPropertyFormatDescription, GetDevicePropertyScope(), GetStartingDeviceChannelNumber())].mShadowTime = CAHostTimeBase::GetTheCurrentTime();
-				
+
 				// Update the shadow time for the frame rate if it is different
 				if (mFrameRate != currentFrameRate)
 					mProperties[PropertyAddress(kCMIOStreamPropertyFrameRate, GetDevicePropertyScope(), GetStartingDeviceChannelNumber())].mShadowTime = CAHostTimeBase::GetTheCurrentTime();
@@ -841,12 +841,12 @@ namespace CMIO { namespace DPA { namespace Sample { namespace Server
 				mFrameType = currentFrameType;
 				mFrameRate = currentFrameRate;
                 mNominalFrameDuration = mFrameRatesMap[mFrameType][mFrameRate];
-				
+
 				// DoWhatYouWouldNeedToDoToProgramTheHardware();
 
 			}
 		}
-	}	
+	}
 
 	//-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 	// GetFrameRates()
@@ -855,7 +855,7 @@ namespace CMIO { namespace DPA { namespace Sample { namespace Server
 	{
 		// If there is no qualifier, then this request is for the frame rates of the current FrameType
 		FrameType frameType = (NULL == qualifier) ? GetFrameType() : *qualifier;
-		
+
 		// Find the frame rates associated with the FrameType
 		FrameTypeToFrameRatesMap::const_iterator i = mFrameRatesMap.find(frameType);
 		ThrowIf(i == mFrameRatesMap.end(), CAException(kCMIOHardwareUnknownPropertyError), "Stream::GetFrameRates: unable to map FrameType to FrameRates");
@@ -868,7 +868,7 @@ namespace CMIO { namespace DPA { namespace Sample { namespace Server
 		int index = 0;
 		for (FrameRates::const_iterator ii = (*i).second.begin() ; ii != (*i).second.end() ; ++ii)
 			(*frameRates)[index++] = (*ii).first;
-		
+
 		return size;
 	}
 
@@ -883,30 +883,30 @@ namespace CMIO { namespace DPA { namespace Sample { namespace Server
 
 		// Grab the mutex for the overall device's state
 		CAMutex::Locker locker(mStateMutex);
-		
+
 		// Program the device settings (which starts the stream) if currently streaming
 		bool programSettings = mStreaming;
-		
+
 		// Stop the stream if needed
 		if (mStreaming)
 		{
 			Stop(MACH_PORT_NULL);
 		}
-		
+
 		// Save the current frame type & frame rate control in the event of an error so a restore attempt can be made
 		Float64 currentFrameRate = mFrameRate;
-		
-        
+
+
         FrameRates::const_iterator i = mFrameRatesMap[mFrameType].find(frameRate);
         if (i == mFrameRatesMap[mFrameType].end())
         {
             //the desired frameRate isn't in the current mFrameType's list
             return;
         }
-        
+
 		// Set the frame rate to the fastest possible for this frame type
         //		mFrameRate = (*mFrameRatesMap[mFrameType].rbegin()).first;
-		
+
 		if (programSettings)
 		{
 			try
@@ -915,74 +915,74 @@ namespace CMIO { namespace DPA { namespace Sample { namespace Server
 				// Send message to kext here to change the format
 				IOVideoStreamDescription theNewFormat;
                 bzero(&theNewFormat, sizeof(IOVideoStreamDescription));
-                
+
 				switch(mFrameType)
 				{
 					case kYUV422_720x480:
-						theNewFormat.mVideoCodecType = kYUV422_720x480; 
+						theNewFormat.mVideoCodecType = kYUV422_720x480;
 						theNewFormat.mVideoCodecFlags = FrameRateToCodecFlags(frameRate);
 						theNewFormat.mWidth = 720;
 						theNewFormat.mHeight = 480;
 						break;
-                        
+
 					case kYUV422_720x486:
-						theNewFormat.mVideoCodecType = kYUV422_720x486; 
+						theNewFormat.mVideoCodecType = kYUV422_720x486;
 						theNewFormat.mVideoCodecFlags = FrameRateToCodecFlags(mFrameRate);
 						theNewFormat.mWidth = 720;
 						theNewFormat.mHeight = 486;
 						break;
-                        
+
 					case kYUV422_720x576:
-						theNewFormat.mVideoCodecType = kYUV422_720x576; 
+						theNewFormat.mVideoCodecType = kYUV422_720x576;
 						theNewFormat.mVideoCodecFlags = FrameRateToCodecFlags(mFrameRate);
 						theNewFormat.mWidth = 720;
 						theNewFormat.mHeight = 576;
 						break;
-                        
+
 					case kYUV422_1280x720:
-						theNewFormat.mVideoCodecType = kYUV422_1280x720; 
+						theNewFormat.mVideoCodecType = kYUV422_1280x720;
 						theNewFormat.mVideoCodecFlags = FrameRateToCodecFlags(frameRate);
 						theNewFormat.mWidth = 1280;
 						theNewFormat.mHeight = 720;
 						break;
-                        
+
 					case kYUV422_1920x1080:
-						theNewFormat.mVideoCodecType = kYUV422_1920x1080; 
+						theNewFormat.mVideoCodecType = kYUV422_1920x1080;
 						theNewFormat.mVideoCodecFlags = FrameRateToCodecFlags(frameRate);
 						theNewFormat.mWidth = 1920;
 						theNewFormat.mHeight = 1080;
 						break;
- 
+
                     case kYUV422_10_720x480:
-						theNewFormat.mVideoCodecType = kYUV422_10_720x480; 
+						theNewFormat.mVideoCodecType = kYUV422_10_720x480;
 						theNewFormat.mVideoCodecFlags = FrameRateToCodecFlags(mFrameRate);
 						theNewFormat.mWidth = 720;
 						theNewFormat.mHeight = 480;
 						break;
-                        
+
 					case kYUV422_10_720x486:
-						theNewFormat.mVideoCodecType = kYUV422_10_720x486; 
+						theNewFormat.mVideoCodecType = kYUV422_10_720x486;
 						theNewFormat.mVideoCodecFlags = FrameRateToCodecFlags(mFrameRate);
 						theNewFormat.mWidth = 720;
 						theNewFormat.mHeight = 486;
 						break;
-                        
+
 					case kYUV422_10_720x576:
-						theNewFormat.mVideoCodecType = kYUV422_10_720x576; 
+						theNewFormat.mVideoCodecType = kYUV422_10_720x576;
 						theNewFormat.mVideoCodecFlags = FrameRateToCodecFlags(mFrameRate);
 						theNewFormat.mWidth = 720;
 						theNewFormat.mHeight = 576;
 						break;
-                        
+
 					case kYUV422_10_1280x720:
-						theNewFormat.mVideoCodecType = kYUV422_10_1280x720; 
+						theNewFormat.mVideoCodecType = kYUV422_10_1280x720;
 						theNewFormat.mVideoCodecFlags = FrameRateToCodecFlags(mFrameRate);
 						theNewFormat.mWidth = 1280;
 						theNewFormat.mHeight = 720;
 						break;
-						
+
 					case kYUV422_10_1920x1080:
-						theNewFormat.mVideoCodecType = kYUV422_10_1920x1080; 
+						theNewFormat.mVideoCodecType = kYUV422_10_1920x1080;
 						theNewFormat.mVideoCodecFlags = FrameRateToCodecFlags(mFrameRate);
 						theNewFormat.mWidth = 1920;
 						theNewFormat.mHeight = 1080;
@@ -990,14 +990,14 @@ namespace CMIO { namespace DPA { namespace Sample { namespace Server
 				}
 				printf("SetFrameRate newFormat.mVideoCodecType = %lu newFormat.mVideoCodecFlags = %x\n",
                        (long unsigned int)theNewFormat.mVideoCodecType, (unsigned int)theNewFormat.mVideoCodecFlags);
-                
+
 				SetStreamFormat(&theNewFormat);
-                
+
 				Start(MACH_PORT_NULL, MACH_PORT_NULL, kCMIOSampleBufferDiscontinuityFlag_DataFormatChanged);
 
 				mFrameRate = frameRate;
 
-				
+
 				// Update the shadow time for the frame rate
 				mProperties[PropertyAddress(kCMIOStreamPropertyFrameRate, GetDevicePropertyScope(), GetStartingDeviceChannelNumber())].mShadowTime = CAHostTimeBase::GetTheCurrentTime();
 			}
@@ -1005,9 +1005,9 @@ namespace CMIO { namespace DPA { namespace Sample { namespace Server
 			{
 				// Something went wrong, so try and restore the previous frame type & frame rate control
 				mFrameRate = currentFrameRate;
-				
+
 				// DoWhatYouWouldNeedToDoToProgramTheHardware();
-                
+
                 // Start the stream
 				Start(MACH_PORT_NULL, MACH_PORT_NULL, kCMIOSampleBufferDiscontinuityFlag_DataFormatChanged);
 			}
@@ -1023,92 +1023,92 @@ namespace CMIO { namespace DPA { namespace Sample { namespace Server
 				switch(mFrameType)
 				{
 					case kYUV422_720x480:
-						theNewFormat.mVideoCodecType = kYUV422_720x480; 
+						theNewFormat.mVideoCodecType = kYUV422_720x480;
 						theNewFormat.mVideoCodecFlags = FrameRateToCodecFlags(frameRate);
 						theNewFormat.mWidth = 720;
 						theNewFormat.mHeight = 480;
 						break;
-			
+
 					case kYUV422_720x486:
-						theNewFormat.mVideoCodecType = kYUV422_720x486; 
+						theNewFormat.mVideoCodecType = kYUV422_720x486;
 						theNewFormat.mVideoCodecFlags = FrameRateToCodecFlags(mFrameRate);
 						theNewFormat.mWidth = 720;
 						theNewFormat.mHeight = 486;
 						break;
-		
+
 					case kYUV422_720x576:
-						theNewFormat.mVideoCodecType = kYUV422_720x576; 
+						theNewFormat.mVideoCodecType = kYUV422_720x576;
 						theNewFormat.mVideoCodecFlags = FrameRateToCodecFlags(mFrameRate);
 						theNewFormat.mWidth = 720;
 						theNewFormat.mHeight = 576;
 						break;
-                        
+
 					case kYUV422_1280x720:
-						theNewFormat.mVideoCodecType = kYUV422_1280x720; 
+						theNewFormat.mVideoCodecType = kYUV422_1280x720;
 						theNewFormat.mVideoCodecFlags = FrameRateToCodecFlags(frameRate);
 						theNewFormat.mWidth = 1280;
 						theNewFormat.mHeight = 720;
 						break;
-						
+
 					case kYUV422_1920x1080:
-						theNewFormat.mVideoCodecType = kYUV422_1920x1080; 
+						theNewFormat.mVideoCodecType = kYUV422_1920x1080;
 						theNewFormat.mVideoCodecFlags = FrameRateToCodecFlags(frameRate);
 						theNewFormat.mWidth = 1920;
 						theNewFormat.mHeight = 1080;
 						break;
                     case kYUV422_10_720x480:
-						theNewFormat.mVideoCodecType = kYUV422_10_720x480; 
+						theNewFormat.mVideoCodecType = kYUV422_10_720x480;
 						theNewFormat.mVideoCodecFlags = FrameRateToCodecFlags(mFrameRate);
 						theNewFormat.mWidth = 720;
 						theNewFormat.mHeight = 480;
 						break;
-                        
+
 					case kYUV422_10_720x486:
-						theNewFormat.mVideoCodecType = kYUV422_10_720x486; 
+						theNewFormat.mVideoCodecType = kYUV422_10_720x486;
 						theNewFormat.mVideoCodecFlags = FrameRateToCodecFlags(mFrameRate);
 						theNewFormat.mWidth = 720;
 						theNewFormat.mHeight = 486;
 						break;
-                        
+
 					case kYUV422_10_720x576:
-						theNewFormat.mVideoCodecType = kYUV422_10_720x576; 
+						theNewFormat.mVideoCodecType = kYUV422_10_720x576;
 						theNewFormat.mVideoCodecFlags = FrameRateToCodecFlags(mFrameRate);
 						theNewFormat.mWidth = 720;
 						theNewFormat.mHeight = 576;
 						break;
-                        
+
 					case kYUV422_10_1280x720:
-						theNewFormat.mVideoCodecType = kYUV422_10_1280x720; 
+						theNewFormat.mVideoCodecType = kYUV422_10_1280x720;
 						theNewFormat.mVideoCodecFlags = FrameRateToCodecFlags(mFrameRate);
 						theNewFormat.mWidth = 1280;
 						theNewFormat.mHeight = 720;
 						break;
-						
+
 					case kYUV422_10_1920x1080:
-						theNewFormat.mVideoCodecType = kYUV422_10_1920x1080; 
-						theNewFormat.mVideoCodecFlags = FrameRateToCodecFlags(mFrameRate);  
+						theNewFormat.mVideoCodecType = kYUV422_10_1920x1080;
+						theNewFormat.mVideoCodecFlags = FrameRateToCodecFlags(mFrameRate);
 						theNewFormat.mWidth = 1920;
 						theNewFormat.mHeight = 1080;
 						break;
                 }
-				
+
 				SetStreamFormat(&theNewFormat);
-                            
+
 				// Update the shadow time for the frame rate if it is different
 				mFrameRate = frameRate;
-                
+
                 mProperties[PropertyAddress(kCMIOStreamPropertyFrameRate, GetDevicePropertyScope(), GetStartingDeviceChannelNumber())].mShadowTime = CAHostTimeBase::GetTheCurrentTime();
 			}
 			catch (...)
 			{
 				// Something went wrong, so try and restore the previous frame rate control
 				mFrameRate = currentFrameRate;
-				
+
 				// DoWhatYouWouldNeedToDoToProgramTheHardware();
-                
+
 			}
 		}
-		
+
     }
 
 	#pragma mark -
@@ -1120,10 +1120,10 @@ namespace CMIO { namespace DPA { namespace Sample { namespace Server
 		// Get timing information so the client can drive their output clock
 		CMTime clockTime = kCMTimeInvalid;
 		UInt64 hostTimeInNanos = 0LL;
-		
+
 		clockTime = mEvents[0].mEventTime;
 		hostTimeInNanos = mEvents[0].mHostTimeInNanos;
-		
+
 		if ((CMTimeCompare(mPreviousNotedEvent.mEventTime, clockTime) != 0) or (mPreviousNotedEvent.mHostTimeInNanos != hostTimeInNanos))
 		{
 			mPreviousNotedEvent.mEventTime = clockTime;
@@ -1139,10 +1139,10 @@ namespace CMIO { namespace DPA { namespace Sample { namespace Server
 
 		// Release the current output buffer
 		mOutputBuffer.Reset();
-		
+
 		// Use the union structure to handle the message because we send one type but receive another
 		OutputBufferMessages message;
-		
+
 		// Setup the message
 		message.asOutputBufferRequestedMessage.mHeader.msgh_bits		= MACH_MSGH_BITS(MACH_MSG_TYPE_COPY_SEND, MACH_MSG_TYPE_MAKE_SEND_ONCE);
 		//		message.asOutputBufferRequestedMessage.mHeader.msgh_bits		= MACH_MSGH_BITS(MACH_MSG_TYPE_COPY_SEND, MACH_MSG_TYPE_MAKE_SEND_ONCE) | MACH_MSGH_BITS_COMPLEX;
@@ -1151,13 +1151,13 @@ namespace CMIO { namespace DPA { namespace Sample { namespace Server
 		message.asOutputBufferRequestedMessage.mHeader.msgh_local_port	= mig_get_reply_port();
 		message.asOutputBufferRequestedMessage.mHeader.msgh_reserved	= 0;
 		message.asOutputBufferRequestedMessage.mHeader.msgh_id			= kOutputBufferRequested;
-		
+
 		message.asOutputBufferRequestedMessage.mClockTime				= CMTimeOverride(clockTime);
 		message.asOutputBufferRequestedMessage.mHostTimeInNanos			= hostTimeInNanos;
 		message.asOutputBufferRequestedMessage.mLastSequenceNumber      = mLastOutputSequenceNumber;
-        
+
 //        DebugMessage("mHostTimeInNanos = %lld message.asOutputBufferRequestedMessage.mSequenceNumber = %lld", message.asOutputBufferRequestedMessage.mHostTimeInNanos,message.asOutputBufferRequestedMessage.mLastSequenceNumber);
-       
+
 		mach_msg_size_t replySizeLimit = sizeof(OutputBufferMessages) + sizeof(mach_msg_trailer_t);
 		mach_msg_return_t err = mach_msg(&(message.asOutputBufferRequestedMessage.mHeader), MACH_SEND_MSG | MACH_RCV_MSG, message.asOutputBufferRequestedMessage.mHeader.msgh_size, replySizeLimit, message.asOutputBufferRequestedMessage.mHeader.msgh_local_port, MACH_MSG_TIMEOUT_NONE, MACH_PORT_NULL);
 		if (MACH_MSG_SUCCESS != err)
@@ -1172,14 +1172,14 @@ namespace CMIO { namespace DPA { namespace Sample { namespace Server
 				case MACH_RCV_PORT_CHANGED:
 					mig_dealloc_reply_port(message.asOutputBufferRequestedMessage.mHeader.msgh_local_port);
 					break;
-					
+
 				default:
 					mig_put_reply_port(message.asOutputBufferRequestedMessage.mHeader.msgh_local_port);
 			}
-			
+
 			return;
 		}
-		
+
 		// If the reply carried no payload, simply return
 		if (kNoOutputBufferSupplied == message.asNoOutputBufferSuppliedMessage.mHeader.msgh_id)
 			return;
@@ -1191,29 +1191,29 @@ namespace CMIO { namespace DPA { namespace Sample { namespace Server
             mCurrentOutputSequenceNumber = message.asOutputSurfaceSuppliedMessage.mSequenceNumber;
             mCurrentDiscontinuityFlags = message.asOutputSurfaceSuppliedMessage.mDiscontinuityFlags;
             mCurrentSMPTETime = message.asOutputSurfaceSuppliedMessage.mSMPTETime;
-            
+
             // Reconstitute the pixel buffer from the IOSurface's mach port
             CVA::Pixel::Buffer pixelBuffer(CVA::Pixel::Buffer::CreateFromIOSurface(NULL, SA::Surface(IOSurfaceLookupFromMachPort(message.asOutputSurfaceSuppliedMessage.mDescriptor.name)), NULL));
-            
+
             // Deallocate the Mach port was used to reconstitute the IOSurface
             (void) mach_port_deallocate(mach_task_self(), message.asOutputSurfaceSuppliedMessage.mDescriptor.name);
-            
+
             // Lock the base address of the pixel buffer
             pixelBuffer.LockBaseAddress(kCVPixelBufferLock_ReadOnly);
-            
+
             try
             {
                 // Create the Block Buffer to wrap the CV Pixel Buffer.
                 CMBlockBufferCustomBlockSource customBlockSource = { kCMBlockBufferCustomBlockSourceVersion, NULL, ReleasePixelBufferCallback, pixelBuffer };
-                
+
                 size_t frameSize = CVPixelBufferGetBytesPerRow(pixelBuffer) * CVPixelBufferGetHeight(pixelBuffer);
                 DebugMessage("DP::AJA::Server::Stream::GetOutputBuffer height = %lld, bpr =  %lld frameSize = %lld",CVPixelBufferGetHeight(pixelBuffer),CVPixelBufferGetBytesPerRow(pixelBuffer),frameSize);
                 ThrowIf(frameSize == 0, CAException(kCMIOHardwareBadPropertySizeError), "CMIO::DP::VDC::Stream::FrameArrived: frameSize was 0!");
-                
+
                 // Wrap the native frame in a block buffer.  kCFAllocatorNull will be used for the block allocator, so no memory will be deallocated when the block buffer goes out of scope.
                 mOutputBuffer.Reset(CMA::BlockBuffer::CreateWithMemoryBlock(NULL, CVPixelBufferGetBaseAddress(pixelBuffer), frameSize, NULL, &customBlockSource, 0, frameSize, 0));
-                
-                
+
+
                 // Bump the pixel buffer's retention count since it is now 'owned' by the block buffer and will be released in ReleasePixelBufferCallback()
                 CVPixelBufferRetain(pixelBuffer);
             }
@@ -1223,15 +1223,15 @@ namespace CMIO { namespace DPA { namespace Sample { namespace Server
                 pixelBuffer.UnlockBaseAddress(kCVPixelBufferLock_ReadOnly);
                 throw;
             }
-            
+
             // Attach the pixel buffer reference to the block buffer
             CMSetAttachment(mOutputBuffer, kCMIOBlockBufferAttachmentKey_CVPixelBufferReference, pixelBuffer, kCMAttachmentMode_ShouldNotPropagate);
-            
+
         }
         else
         {
             DebugMessage("GOT BLOCK BUFFER SUPPLIED");
-      
+
             mCurrentOutputSequenceNumber = message.asOutputBufferSuppliedMessage.mSequenceNumber;
             mCurrentDiscontinuityFlags = message.asOutputBufferSuppliedMessage.mDiscontinuityFlags;
             mCurrentSMPTETime = message.asOutputBufferSuppliedMessage.mSMPTETime;
@@ -1240,9 +1240,9 @@ namespace CMIO { namespace DPA { namespace Sample { namespace Server
             CMBlockBufferCustomBlockSource customBlockSource = { kCMBlockBufferCustomBlockSourceVersion, NULL, ReleaseOutputBufferCallBack, this };
             mOutputBuffer.Reset(CMA::BlockBuffer::CreateWithMemoryBlock(NULL, message.asOutputBufferSuppliedMessage.mDescriptor.address, message.asOutputBufferSuppliedMessage.mDescriptor.size, kCFAllocatorNull, &customBlockSource, 0, message.asOutputBufferSuppliedMessage.mDescriptor.size, 0));
         }
-	}	
+	}
 
-	#pragma mark -	
+	#pragma mark -
 	//-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 	// StartDeckThreads()
 	//-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -1255,15 +1255,15 @@ namespace CMIO { namespace DPA { namespace Sample { namespace Server
 			// Don't do anything if this client is already in the already marked as listening to the deck
 			if (mDeckListeners.end() != mDeckListeners.find(client))
 				return;
-			
+
 			// Add the client to the set of deck listerers
 			mDeckListeners.insert(client);
 		}
-		
+
 		// Start the threads
 		mDeck.StartThreads();
 	}
-	
+
 	//-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 	// StopDeckThreads()
 	//-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -1271,15 +1271,15 @@ namespace CMIO { namespace DPA { namespace Sample { namespace Server
 	{
 		// Remove the client from the set of listing to the deck
 		mDeckListeners.erase(client);
-		
+
 		// Don't stop the threads if there are are still listeners
 		if (not mDeckListeners.empty() and MACH_PORT_NULL != client)
 			return;
-		
+
 		// Stop the threads
 		mDeck.StopThreads();
 	}
-	
+
 	#pragma mark -
 	//---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 	// ReleaseOutputBufferCallBack()
@@ -1318,7 +1318,7 @@ namespace CMIO { namespace DPA { namespace Sample { namespace Server
 		mProperties[PropertyAddress(kCMIOStreamPropertyDeckFrameNumber, GetDevicePropertyScope(), GetStartingDeviceChannelNumber())].mShadowTime = CAHostTimeBase::GetTheCurrentTime();
 		GetOwningDevice().SendPropertyStatesChangedMessage();
 	}
-	
+
 	//-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 	// DeckCueingChanged()
 	//-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

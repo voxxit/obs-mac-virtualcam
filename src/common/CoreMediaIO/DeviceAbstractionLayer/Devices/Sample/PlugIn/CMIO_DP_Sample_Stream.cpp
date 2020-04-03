@@ -2,14 +2,14 @@
 	    File: CMIO_DP_Sample_Stream.cpp
 	Abstract: n/a
 	 Version: 1.2
-	
+
 	Disclaimer: IMPORTANT:  This Apple software is supplied to you by Apple
 	Inc. ("Apple") in consideration of your agreement to the following
 	terms, and your use, installation, modification or redistribution of
 	this Apple software constitutes acceptance of these terms.  If you do
 	not agree with these terms, please do not use, install, modify or
 	redistribute this Apple software.
-	
+
 	In consideration of your agreement to abide by the following terms, and
 	subject to these terms, Apple grants you a personal, non-exclusive
 	license, under Apple's copyrights in this original Apple software (the
@@ -25,13 +25,13 @@
 	implied, are granted by Apple herein, including but not limited to any
 	patent rights that may be infringed by your derivative works or by other
 	works in which the Apple Software may be incorporated.
-	
+
 	The Apple Software is provided by Apple on an "AS IS" basis.  APPLE
 	MAKES NO WARRANTIES, EXPRESS OR IMPLIED, INCLUDING WITHOUT LIMITATION
 	THE IMPLIED WARRANTIES OF NON-INFRINGEMENT, MERCHANTABILITY AND FITNESS
 	FOR A PARTICULAR PURPOSE, REGARDING THE APPLE SOFTWARE OR ITS USE AND
 	OPERATION ALONE OR IN COMBINATION WITH YOUR PRODUCTS.
-	
+
 	IN NO EVENT SHALL APPLE BE LIABLE FOR ANY SPECIAL, INDIRECT, INCIDENTAL
 	OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
 	SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
@@ -40,9 +40,9 @@
 	AND WHETHER UNDER THEORY OF CONTRACT, TORT (INCLUDING NEGLIGENCE),
 	STRICT LIABILITY OR OTHERWISE, EVEN IF APPLE HAS BEEN ADVISED OF THE
 	POSSIBILITY OF SUCH DAMAGE.
-	
+
 	Copyright (C) 2012 Apple Inc. All Rights Reserved.
-	
+
 */
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -83,7 +83,7 @@
 namespace
 {
 	const UInt64 kClockTimescale = 8000;
-	
+
 	bool IsDeckPropertyAddress(const CMIO::PropertyAddress& address)
 	{
 		switch (address.mSelector)
@@ -96,7 +96,7 @@ namespace
 			case kCMIOStreamPropertyDeckCueing:
 				return true;
 		}
-		
+
 		return false;
 	}
 }
@@ -119,7 +119,7 @@ namespace CMIO { namespace DP { namespace Sample
 		mScheduledOutputNotificationProc(NULL),
 		mDeck(NULL),
 		mFormatPairs(),
-		mFrameType(DPA::Sample::kYUV422_720x480),
+		mFrameType(DPA::Sample::kYUV422_1920x1080),
 		mDeckPropertyListeners(),
 		mMessageThread(),
 		mBufferQueue(CMA::SimpleQueue<CMSampleBufferRef>::Create(NULL, 30)),
@@ -135,7 +135,7 @@ namespace CMIO { namespace DP { namespace Sample
 		mSyncClock(true)
 	{
 	}
-	
+
 
 	//-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 	// ~Stream()
@@ -143,7 +143,7 @@ namespace CMIO { namespace DP { namespace Sample
 	Stream::~Stream()
 	{
 	}
-	
+
 	//-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 	// Initialize()
 	//-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -154,21 +154,21 @@ namespace CMIO { namespace DP { namespace Sample
 
 		// Activate the frame rate properties (kCMIOStreamPropertyFrameRate & kCMIOStreamPropertyFrameRates) since the stream's frame rates can be determined
 		mFormatList->ActivateFrameRateProperties(true);
- 
+
 		// Add the supported formats
 		AddAvailableFormatDescriptions();
-        
+
 		// Add the Deck property object
 		mDeck = new DP::Property::Deck(*this, StreamDeckOneShot, TimeCodeOneShot, DropnessOneShot, ThreadedOneShot, LocalOneShot, CueingOneShot);
 		AddProperty(mDeck);
-		
+
 		if (IsInput())
 		{
 			// Add the NoData property
 			mNoData = new DP::Property::NoData(*this, 250);
 			AddProperty(mNoData);
-			
-            
+
+
             // Create the clock
 			if (NULL == mClock->GetClock())
 			{
@@ -194,11 +194,11 @@ namespace CMIO { namespace DP { namespace Sample
 			// Add the FirstOutputPresentationTimeStamp property object (allows clients to monitor when output is being sent)
 			mFirstOutputPresentationTimeStamp = new DP::Property::FirstOutputPresentationTimeStamp(*this);
 			AddProperty(mFirstOutputPresentationTimeStamp);
-			
+
 			// Add the ScheduledOutputNotificationProc property object (allows clients to monitor when each frame is being sent)
 			mScheduledOutputNotificationProc = new DP::Property::ScheduledOutputNotificationProc(*this);
 			AddProperty(mScheduledOutputNotificationProc);
-			
+
             // Create the clock
 			if (NULL == mClock->GetClock())
 			{
@@ -208,10 +208,10 @@ namespace CMIO { namespace DP { namespace Sample
 				ThrowIfError(err, CAException(kCMIOHardwareUnspecifiedError), "DP::Sample::Stream::Start: could not create clock");
 				mClock->SetClock(clock);
 				CFRelease(clock);
-			}		
+			}
 		}
 	}
-	
+
 	//-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 	// Finalize()
 	//	Finalize() is called in place of Teardown() when being lazy about cleaning up. The idea is to do as little work as possible.
@@ -219,15 +219,15 @@ namespace CMIO { namespace DP { namespace Sample
 	void Stream::Finalize()
 	{
 	}
-	
+
 	//-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 	// Teardown()
 	//-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 	void Stream::Teardown()
-	{		
+	{
 		// Empty all the format descriptions from the format list
 		mFormatList->RemoveAllAvailableFormats();
-		
+
 		if (NULL != mDeck)
 		{
 			RemoveProperty(mDeck);
@@ -272,18 +272,18 @@ namespace CMIO { namespace DP { namespace Sample
 				mScheduledOutputNotificationProc = NULL;
 			}
 		}
-			
+
 		// Invalidate and release the clock (by invalidating the clock, it will return kCMTimeInvalid for any other clients who happen to retain it)
 		if (mClock->GetClock())
 		{
 			CMIOStreamClockInvalidate(mClock->GetClock());
 			mClock->SetClock(NULL);
 		}
-		
+
 		// Teardown the super class
 		DP::Stream::Teardown();
 	}
-	
+
 	#pragma mark -
 	//-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 	// CopyStreamName()
@@ -292,7 +292,7 @@ namespace CMIO { namespace DP { namespace Sample
 	{
 		return mStreamName.CopyCFString();
 	}
-	
+
 	//-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 	// GetTerminalType()
 	//-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -339,7 +339,7 @@ namespace CMIO { namespace DP { namespace Sample
     {
         return 6;
     }
-    
+
 	//-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 	// GetMinimumInFlightFramesForThrottledPlayback()
 	//-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -355,26 +355,26 @@ namespace CMIO { namespace DP { namespace Sample
 	bool Stream::HasProperty(const CMIOObjectPropertyAddress& address) const
 	{
 		bool answer = false;
-		
+
 		// Take and hold the state mutex
 		CAMutex::Locker stateMutex(GetOwningDevice().GetStateMutex());
-		
+
 		// Do the work if we still have to
 		switch (address.mSelector)
 		{
 			case kCMIOStreamPropertyInitialPresentationTimeStampForLinkedAndSyncedAudio:
 				answer = true;
 				break;
-			
+
 			case kCMIOStreamPropertyOutputBuffersNeededForThrottledPlayback:
 				answer = true;
 				break;
-			
+
 			default:
 				answer = DP::Stream::HasProperty(address);
 				break;
 		};
-		
+
 		return answer;
 	}
 
@@ -384,10 +384,10 @@ namespace CMIO { namespace DP { namespace Sample
 	bool Stream::IsPropertySettable(const CMIOObjectPropertyAddress& address) const
 	{
 		bool answer = false;
-		
+
 		// Take and hold the state mutex
 		CAMutex::Locker stateMutex(GetOwningDevice().GetStateMutex());
-		
+
 		// Do the work if we still have to
 		switch (address.mSelector)
 		{
@@ -398,12 +398,12 @@ namespace CMIO { namespace DP { namespace Sample
 			case kCMIOStreamPropertyOutputBuffersNeededForThrottledPlayback:
 				answer = false;
 				break;
-			
+
 			default:
 				answer = DP::Stream::IsPropertySettable(address);
 				break;
 		};
-		
+
 		return answer;
 	}
 
@@ -413,26 +413,26 @@ namespace CMIO { namespace DP { namespace Sample
 	UInt32 Stream::GetPropertyDataSize(const CMIOObjectPropertyAddress& address, UInt32 qualifierDataSize, const void* qualifierData) const
 	{
 		UInt32	answer = 0;
-		
+
 		// Take and hold the state mutex
 		CAMutex::Locker stateMutex(GetOwningDevice().GetStateMutex());
-		
+
 		// Do the work if we still have to
 		switch (address.mSelector)
 		{
 			case kCMIOStreamPropertyInitialPresentationTimeStampForLinkedAndSyncedAudio:
 				answer = sizeof(CMTime);
 				break;
-				
+
             case kCMIOStreamPropertyOutputBuffersNeededForThrottledPlayback:
 				answer = sizeof(UInt32);
 				break;
-				
+
 			default:
 				answer = DP::Stream::GetPropertyDataSize(address, qualifierDataSize, qualifierData);
 				break;
 		};
-		
+
 		return answer;
 	}
 
@@ -443,7 +443,7 @@ namespace CMIO { namespace DP { namespace Sample
 	{
 		// Take and hold the state mutex
 		CAMutex::Locker stateMutex(GetOwningDevice().GetStateMutex());
-		
+
 		// Do the work if we still have to
 		switch (address.mSelector)
 		{
@@ -451,11 +451,11 @@ namespace CMIO { namespace DP { namespace Sample
 				{
 					ThrowIf(dataSize != GetPropertyDataSize(address, qualifierDataSize, qualifierData), CAException(kCMIOHardwareBadPropertySizeError), "CMIO::DP::Sample::Device::GetPropertyData: wrong data size for kCMIOStreamPropertyInitialPresentationTimeStampForLinkedAndSyncedAudio");
 					ThrowIf(qualifierDataSize != sizeof(AudioTimeStamp), CAException(kCMIOHardwareBadPropertySizeError), "CMIO::DP::Sample::Device::GetPropertyData: wrong qualifier data size for kCMIOStreamPropertyInitialPresentationTimeStampForLinkedAndSyncedAudio");
-					
+
 					// Get the audio time stamp
 					const AudioTimeStamp *audioTimeStamp = reinterpret_cast<const AudioTimeStamp *>(qualifierData);
 					ThrowIf((kAudioTimeStampHostTimeValid & audioTimeStamp->mFlags) == 0, CAException(kCMIOHardwareUnspecifiedError), "CMIO::DP::Sample::Device::GetPropertyData: qualifier data AudioTimeStamp hosttime is not valid for kCMIOStreamPropertyInitialPresentationTimeStampForLinkedAndSyncedAudio");
-					
+
 					// If we are not streaming we really shouldn't be in here, so signal that we won't ever have a timestamp for the buffer
 					if (not Streaming())
 					{
@@ -465,30 +465,30 @@ namespace CMIO { namespace DP { namespace Sample
 					{
 						// Try to get the most recent PTS;  get twice so we can
 						// be assured of getting a coherit value.
-						
+
 						RecentTimingInfo	recentTimingInfo[ 4 ];
-						
+
                         std::atomic_thread_fence(std::memory_order_seq_cst);
 						recentTimingInfo[ 0 ] =	mRecentTimingInfo[ 0 ];
 						recentTimingInfo[ 1 ] =	mRecentTimingInfo[ 0 ];
 						recentTimingInfo[ 2 ] =	mRecentTimingInfo[ 1 ];
 						recentTimingInfo[ 3 ] =	mRecentTimingInfo[ 1 ];
-						
+
 						// Determine which events are valid.
-						
+
 						bool timing0Valid = (	 recentTimingInfo[ 0 ].mValid and recentTimingInfo[ 1 ].mValid
 											 and CMTIME_IS_VALID(recentTimingInfo[ 0 ].mPTS)
 											 and (recentTimingInfo[ 0 ].mHostTime == recentTimingInfo[ 1 ].mHostTime)
 											 and (CMTimeCompare(recentTimingInfo[ 0 ].mPTS, recentTimingInfo[ 1 ].mPTS) == 0));
-						
+
 						bool timing1Valid = (	 recentTimingInfo[ 2 ].mValid and recentTimingInfo[ 3 ].mValid
 											 and CMTIME_IS_VALID(recentTimingInfo[ 2 ].mPTS)
 											 and (recentTimingInfo[ 2 ].mHostTime == recentTimingInfo[ 3 ].mHostTime)
 											 and (CMTimeCompare(recentTimingInfo[ 2 ].mPTS, recentTimingInfo[ 3 ].mPTS) == 0));
-						
+
 						// Find index of most recent time.  If neither are valid, set index to an invalid value.
 						UInt32	mostRecentIdx;
-						
+
 						if (timing0Valid and timing1Valid)
 						{
 							mostRecentIdx = (recentTimingInfo[ 0 ].mHostTime > recentTimingInfo[ 2 ].mHostTime) ? 0 : 2;
@@ -501,7 +501,7 @@ namespace CMIO { namespace DP { namespace Sample
 						{
 							mostRecentIdx = 0xFFFFFFFF;
 						}
-						
+
 						// If we don't have a valid time, signal that the client needs to try again later
 						if (0xFFFFFFFF == mostRecentIdx)
 						{
@@ -560,7 +560,7 @@ namespace CMIO { namespace DP { namespace Sample
 				}
 				dataUsed = sizeof(CMTime);
 				break;
-				
+
 			case kCMIOStreamPropertyOutputBuffersNeededForThrottledPlayback:
 				ThrowIf(dataSize != GetPropertyDataSize(address, qualifierDataSize, qualifierData), CAException(kCMIOHardwareBadPropertySizeError), "CMIO::DP::Stream::GetPropertyData: wrong data size for kCMIOStreamPropertyOutputBuffersNeededForDroplessPlayback");
 				*static_cast<UInt32*>(data) = GetMinimumInFlightFramesForThrottledPlayback();
@@ -598,27 +598,27 @@ namespace CMIO { namespace DP { namespace Sample
 	{
 		DebugMessage("DP::Sample::Stream::PropertyListenerAdded");
 		DP::Stream::PropertyListenerAdded(address);
-		
+
 		// Don't do anything if the address is not deck related
 		if (not IsDeckPropertyAddress(address))
 			return;
-		
+
 		// Remember that this deck property is being listened too
 		mDeckPropertyListeners.AppendUniqueExactItem(address);
-		
+
 		// If the deck was all ready set up to NOT use one-shot getters, return
 		if (not mDeck->UseOneShotGetters())
 			return;
-		
+
         DebugMessage("DP::Sample::Stream::PropertyListenerAdded calling StartDeckThreads");
-		
+
 		// Tell the deck to stop using one-shot getters
 		mDeck->SetUseOneShotGetters(false);
-		
+
 		// Tell the Assitant to start the threads it uses to track the deck properties
 		DPA::Sample::StartDeckThreads(GetOwningDevice().GetAssistantPort(), GetOwningDevice().GetDeviceGUID(), GetDevicePropertyScope(), GetStartingDeviceChannelNumber());
 	}
-	
+
 	//-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 	// PropertyListenerRemoved()
 	//-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -626,33 +626,33 @@ namespace CMIO { namespace DP { namespace Sample
 	{
 		// Call the super class
 		DP::Stream::PropertyListenerRemoved(address);
-		
+
 		// Don't do anything if the address is not deck related
 		if (not IsDeckPropertyAddress(address))
 			return;
-		
+
 		// Remove the address from the list of deck properties being listend too
 		mDeckPropertyListeners.EraseExactItem(address);
-		
+
 		// Return if there are still any listeners
 		if (not mDeckPropertyListeners.IsEmpty())
 			return;
-		
+
 		// Tell the Assistant it can stop the threads it was using to track the deck properties
 		DPA::Sample::StopDeckThreads(GetOwningDevice().GetAssistantPort(), GetOwningDevice().GetDeviceGUID(), GetDevicePropertyScope(), GetStartingDeviceChannelNumber());
-		
+
 		// Tell the deck to use one-shot getters
 		mDeck->SetUseOneShotGetters(true);
 	}
-	
-	
+
+
 	#pragma mark -
 	//-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 	// UpdatePropertyState()
 	//	Ultimately invoked via the Assistant process notfiying this process of property changes.
 	//	NOTE:  The address is specfied in DEVICE RELATIVE terms (i.e., { selector, kCMIODevicePropertyScopeXXX, element # })
 	//-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-	void Stream::UpdatePropertyState(const PropertyAddress& address, bool sendChangeNotifications) 
+	void Stream::UpdatePropertyState(const PropertyAddress& address, bool sendChangeNotifications)
 	{
 		// Take and hold the state mutex
 		CAMutex::Locker stateMutex(GetOwningDevice().GetStateMutex());
@@ -661,7 +661,7 @@ namespace CMIO { namespace DP { namespace Sample
 		{
 			// Get the current FrameType
 			DPA::Sample::FrameType frameType = DPA::Sample::GetFormatDescription(GetOwningDevice().GetAssistantPort(), GetOwningDevice().GetDeviceGUID(), GetDevicePropertyScope(), GetStartingDeviceChannelNumber());
-			
+
 			if (mFrameType != frameType)
 			{
 				// Inform the format list what the current format description is
@@ -670,20 +670,20 @@ namespace CMIO { namespace DP { namespace Sample
 				// Figure out out the necessary property changed notifications
 				PropertyAddressList notifications;
 				DP::Property::FormatList::DetermineNotifications(*this, mFormatPairs[mFrameType].first, mFormatPairs[frameType].first, notifications);
-				
+
 				// Update the FrameType
 				mFrameType = frameType;
 
-				// Send out the property changed notifications 
+				// Send out the property changed notifications
 				PropertiesChanged((UInt32)notifications.GetNumberItems(), notifications.GetItems());
 			}
-		
+
 		}
 		else if (PropertyAddress::IsSameAddress(address, PropertyAddress(kCMIOStreamPropertyFrameRate, GetDevicePropertyScope(), GetStartingDeviceChannelNumber())))
 		{
-			// Get the current frame rate 
+			// Get the current frame rate
 			Float64 frameRate = DPA::Sample::GetFrameRate(GetOwningDevice().GetAssistantPort(), GetOwningDevice().GetDeviceGUID(), GetDevicePropertyScope(), GetStartingDeviceChannelNumber());
-			
+
 			if (frameRate != mFormatList->GetCurrentFrameRate())
 			{
 				// Inform the format list what the current frame rate is
@@ -693,13 +693,13 @@ namespace CMIO { namespace DP { namespace Sample
 				PropertyAddress address(kCMIOStreamPropertyFrameRate);
 				PropertiesChanged(1, &address);
 			}
-		
+
 		}
 		else if (PropertyAddress::IsSameAddress(address, PropertyAddress(kCMIOStreamPropertyFrameRates, GetDevicePropertyScope(), GetStartingDeviceChannelNumber())))
 		{
 			// Get the current FrameType
 			DPA::Sample::FrameType frameType = DPA::Sample::GetFormatDescription(GetOwningDevice().GetAssistantPort(), GetOwningDevice().GetDeviceGUID(), GetDevicePropertyScope(), GetStartingDeviceChannelNumber());
-			
+
 			// Get the frame rates for this format
 			DPA::Sample::AutoFreeUnboundedArray<Float64> frameRates;
 			DPA::Sample::GetFrameRates(GetOwningDevice().GetAssistantPort(), GetOwningDevice().GetDeviceGUID(), GetDevicePropertyScope(), GetStartingDeviceChannelNumber(), frameType, frameRates);
@@ -763,7 +763,7 @@ namespace CMIO { namespace DP { namespace Sample
 		if (mSyncClock)
 		{
 			UInt64 nowInNanos = CAHostTimeBase::GetCurrentTimeInNanos();
-			
+
 			if (nowInNanos < nanosecondsHostTime)
 			{
 				mOutputHosttimeCorrection = nanosecondsHostTime - nowInNanos;
@@ -772,20 +772,20 @@ namespace CMIO { namespace DP { namespace Sample
 			{
 				mOutputHosttimeCorrection = 0;
 			}
-			
+
 			mOutputHosttimeCorrection += (1000000000 / 10);
 		}
-		
+
 		// Correct the hosttime and drive the clock
 		nanosecondsHostTime -= mOutputHosttimeCorrection;
 
 		#if 1
 			DebugMessage("DP::Sample::Stream::DriveOutputClock: +++\t%p\t%lld\t%d\t%lld", mClock->GetClock(), clockTime.value, clockTime.timescale, nanosecondsHostTime);
 		#endif
-		
+
 		OSStatus err = CMIOStreamClockPostTimingEvent(clockTime, CAHostTimeBase::ConvertFromNanos(nanosecondsHostTime), mSyncClock, mClock->GetClock());
 		DebugMessageIfError(err, "DP::Sample::Stream::DriveOutputClock: CMIOStreamClockPostTimingEvent() failed");
-				
+
 		// If we are syncing the clock then we set the first output presentation timestamp so that clients can
 		// start their graph timebase
 		if (mSyncClock)
@@ -793,14 +793,14 @@ namespace CMIO { namespace DP { namespace Sample
 			#if 1
 				printf("+++\t%p\t%lld\t%d\t%lld\n", mClock->GetClock(), clockTime.value, clockTime.timescale, nanosecondsHostTime);
 			#endif
-			
+
 			mFirstOutputPresentationTimeStamp->SetFirstOutputPresentationTimeStamp(presentationTimeStamp);
 		}
-		
+
 		mSyncClock = false;
 	}
-	
-	
+
+
 	#pragma mark -
 	//-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 	// TellHardwareToSetFormatDescription()
@@ -814,7 +814,7 @@ namespace CMIO { namespace DP { namespace Sample
 		// If the format is the same as the current format or the formats are equal, no need to do anything
 		if (format == mFormatList->GetCurrentFormat() or CMFormatDescriptionEqual(format, mFormatList->GetCurrentFormat()))
 			return true;
-		
+
 		// Find the entry in the FormatPairMap for the requested format, and extract the FrameType
 		FormatPairMap::const_iterator i = std::find_if(mFormatPairs.begin(), mFormatPairs.end(), FormatDescriptionEquals(format));
 		ThrowIf(i == mFormatPairs.end(), CAException(kIOReturnNoDevice), "CMIO::DP::Sample::Stream::TellHardwareToSetFormatDescription: cound not find new format description in FormatPair map");
@@ -832,7 +832,7 @@ namespace CMIO { namespace DP { namespace Sample
 	{
 		mFormatList->RemoveAllAvailableFormats();
 		AddAvailableFormatDescriptions();
-		
+
 		// Indicate that kCMIOStreamPropertyFormatDescription has changed
 		PropertyAddressList changedProperties;
 		PropertyAddress address(kCMIOStreamPropertyFormatDescription);
@@ -850,7 +850,7 @@ namespace CMIO { namespace DP { namespace Sample
 		address.mSelector = kCMIOStreamPropertyFrameRates;
 		changedProperties.AppendUniqueItem(address);
 
-		// Send out the property changed notifications 
+		// Send out the property changed notifications
 		PropertiesChanged((UInt32)changedProperties.GetNumberItems(), changedProperties.GetItems());
 	}
 
@@ -862,16 +862,16 @@ namespace CMIO { namespace DP { namespace Sample
 		// Get frame formats
 		DPA::Sample::AutoFreeUnboundedArray<DPA::Sample::FrameFormat> frameFormats;
 		DPA::Sample::GetFormatDescriptions(GetOwningDevice().GetAssistantPort(), GetOwningDevice().GetDeviceGUID(), GetDevicePropertyScope(), GetStartingDeviceChannelNumber(), frameFormats);
-		
+
 		// Create a dictionary to hold the extensions for the format description
 		CACFDictionary extensions(true);
-		
+
 		// Only has I frames
 		extensions.AddCFType(CFSTR(kCMIO_DPA_Sample_VideoOnlyHasIFrames), kCFBooleanTrue);
 
 		// Only 1 field
-		extensions.AddCFType(kCMFormatDescriptionExtension_FieldCount, CACFNumber(static_cast<SInt32>(1)).GetCFNumber());	
-		
+		extensions.AddCFType(kCMFormatDescriptionExtension_FieldCount, CACFNumber(static_cast<SInt32>(1)).GetCFNumber());
+
 		// Mark 6-1-6 (SMPTE-C) color tags
 		extensions.AddCFType(kCMFormatDescriptionExtension_ColorPrimaries, kCMFormatDescriptionColorPrimaries_SMPTE_C);
 		extensions.AddCFType(kCMFormatDescriptionExtension_TransferFunction, kCMFormatDescriptionTransferFunction_ITU_R_709_2);
@@ -888,24 +888,24 @@ namespace CMIO { namespace DP { namespace Sample
 				case kCMPixelFormat_422YpCbCr10:
 					extensions.AddCFType(kCMFormatDescriptionExtension_FormatName, CFSTR("Component Video - CCIR-601 v210"));
 					break;
-                    
+
 				case kCMPixelFormat_32ARGB:
 					extensions.AddCFType(kCMFormatDescriptionExtension_FormatName, CFSTR("Component Video - CCIR-601 RGB"));
 					break;
-				
+
 				default:
 					ThrowIf(true, CAException(kCMIODeviceUnsupportedFormatError), "CMIO::DP::Sample::Stream::AddAvailableFormatDescriptions: Assistant returned an unknown format");
 			}
 
 			// Create the format description
 			CMA::FormatDescription description(CMA::FormatDescription::VideoFormatDescriptionCreate(NULL, frameFormats[i].mCodecType, frameFormats[i].mWidth, frameFormats[i].mHeight, extensions.GetCFMutableDictionary()), false);
-			
+
 			// Add it to the format list
 			mFormatList->AddAvailableFormat(description);
 
 			// Add the pair:<CMFormatDescriptionRef, DPA::Sample::FrameFormat> to the format pair map
 			mFormatPairs[frameFormats[i].mFrameType] = std::make_pair(description.Get(), frameFormats[i]);
-			
+
 			// Get the frame rates for this format
 			DPA::Sample::AutoFreeUnboundedArray<Float64> frameRates;
 			DPA::Sample::GetFrameRates(GetOwningDevice().GetAssistantPort(), GetOwningDevice().GetDeviceGUID(), GetDevicePropertyScope(), GetStartingDeviceChannelNumber(), frameFormats[i].mFrameType, frameRates);
@@ -935,9 +935,9 @@ namespace CMIO { namespace DP { namespace Sample
 		// Don't do anything if it is the same as the current frame rate
 		if (frameRate == mFormatList->GetCurrentFrameRate())
 			return true;
-		
+
 		// Set the frame rate
-		DPA::Sample::SetFrameRate(GetOwningDevice().GetAssistantPort(), GetOwningDevice().GetDeviceGUID(), GetDevicePropertyScope(), GetStartingDeviceChannelNumber(), frameRate);		
+		DPA::Sample::SetFrameRate(GetOwningDevice().GetAssistantPort(), GetOwningDevice().GetDeviceGUID(), GetDevicePropertyScope(), GetStartingDeviceChannelNumber(), frameRate);
 
 		return true;
 	}
@@ -953,7 +953,7 @@ namespace CMIO { namespace DP { namespace Sample
 
 		// Throw an exception if already streaming
 		ThrowIf(Streaming(), CAException(kCMIOHardwareNotStoppedError), "CMIO::DP::Sample::Stream::Start: Can't start stream when it is already running");
-		
+
 		// Spawn the thread that will get messaged from the Assistant with frames
 		mMessageThread.Reset(reinterpret_cast<CFMachPortCallBack>(Messages), this);
 
@@ -978,10 +978,10 @@ namespace CMIO { namespace DP { namespace Sample
 
 			// Clear any accumulated discontinuity flags
 			SetDiscontinuityFlags(kCMIOSampleBufferNoDiscontinuities);
-			
+
 			// No need to insert a deferred "no data" buffer
 			mDeferredNoDataBufferSequenceNumber = kCMIOInvalidSequenceNumber;
-	
+
 			// Start the stream
 			DPA::Sample::StartStream(GetOwningDevice().GetAssistantPort(), GetOwningDevice().GetDeviceGUID(), mMessageThread.GetMachPort(), GetDevicePropertyScope(), GetStartingDeviceChannelNumber());
 		}
@@ -1010,7 +1010,7 @@ namespace CMIO { namespace DP { namespace Sample
 		// Simply return if not streaming
 		if (not Streaming())
 			return;
-			
+
 		if (IsInput())
 		{
 			// Stop the stream
@@ -1022,14 +1022,14 @@ namespace CMIO { namespace DP { namespace Sample
 			(void) CMIODPASampleStopStream(GetOwningDevice().GetAssistantPort(), GetOwningDevice().GetDeviceGUID(), GetDevicePropertyScope(), GetStartingDeviceChannelNumber());
 			mFirstOutputPresentationTimeStamp->SetFirstOutputPresentationTimeStamp(kCMTimeInvalid);
 		}
-		
+
 		// Release the message thread
 		mMessageThread.Reset();
-			
+
 		// Extract the individual CMSampleBufferRefs from the queue and release them (conveniently, when CMIO::Buffer goes out of scope the wrapped CMSampleBufferRef will be released)
 		while (0 != mBufferQueue.GetCount())
 			CMIO::Buffer buffer(reinterpret_cast<CMSampleBufferRef>(mBufferQueue.Dequeue()));
-		
+
 		// Neuter the clock reporting
 		mRecentTimingInfo[0].mPTS = kCMTimeInvalid;
 		mRecentTimingInfo[0].mHostTime = 0;
@@ -1051,18 +1051,18 @@ namespace CMIO { namespace DP { namespace Sample
 		// Simply return if not streaming or already suspended
 		if (not Streaming() or mSuspended)
 			return;
-			
+
 		if (IsInput())
 		{
 		}
 		else if (IsOutput())
 		{
 		}
-		
+
 		// Mark the stream as suspended
 		mSuspended = true;
 	}
-    
+
 	//-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 	// CopyBufferQueue()
 	//-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -1071,7 +1071,7 @@ namespace CMIO { namespace DP { namespace Sample
 		// Initialize the queue altered proc and its associated refCon
 		mQueueAlteredProc = queueAlteredProc;
 		mQueueAlteredRefCon	= queueAlteredRefCon;
-       
+
 		#if (MAC_OS_X_VERSION_MIN_REQUIRED > MAC_OS_X_VERSION_10_8)
 			// A NULL callback function indicates the client is unregistering, so return NULL as the buffer queue
 			if (NULL == mQueueAlteredProc)
@@ -1096,7 +1096,7 @@ namespace CMIO { namespace DP { namespace Sample
 	//-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 	// Messages()
 	//-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-	void Stream::Messages(CFMachPortRef port, mach_msg_header_t* header, CFIndex size, Stream& stream) 
+	void Stream::Messages(CFMachPortRef port, mach_msg_header_t* header, CFIndex size, Stream& stream)
 	{
 		// Examine the message ID
 		switch (header->msgh_id)
@@ -1115,7 +1115,7 @@ namespace CMIO { namespace DP { namespace Sample
 	//-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 	// FrameArrived()
 	//-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-	void Stream::FrameArrived(DPA::Sample::FrameArrivedMessage* message) 
+	void Stream::FrameArrived(DPA::Sample::FrameArrivedMessage* message)
 	{
 		// Don't do anything if the buffer queue is full
 		if (1.0 == mBufferQueue.Fullness())
@@ -1144,10 +1144,10 @@ namespace CMIO { namespace DP { namespace Sample
 					mExtendedDurationTimingInfo.duration = CMTimeAdd(mExtendedDurationTimingInfo.duration, message->mTimingInfo.duration);
 				}
 			}
-			
+
 			return;
 		}
-		
+
 		// Use the "extended duration" timing if needed (indicated by a non-zero value for mExtendedDurationHostTime)
 		if (0 != mExtendedDurationHostTime)
 		{
@@ -1156,10 +1156,10 @@ namespace CMIO { namespace DP { namespace Sample
 
 			// Add the current frame's duration to the extended duration
 			mExtendedDurationTimingInfo.duration = CMTimeAdd(mExtendedDurationTimingInfo.duration, message->mTimingInfo.duration);
-			
+
 			// Replace the frame's info with with the "extended duration" version
 			message->mTimingInfo = mExtendedDurationTimingInfo;
-	
+
 			// Indicate this frame has an extended duration
 			message->mDiscontinuityFlags |= kCMIOSampleBufferDiscontinuityFlag_DurationWasExtended;
 		}
@@ -1174,7 +1174,7 @@ namespace CMIO { namespace DP { namespace Sample
 			if (CMTIME_IS_INVALID(mTimingInfo.presentationTimeStamp) or (~kCMIOSampleBufferDiscontinuityFlag_DurationWasExtended & GetDiscontinuityFlags()))
 			{
 				mSyncClock = (~kCMIOSampleBufferDiscontinuityFlag_DurationWasExtended & GetDiscontinuityFlags());
-				
+
 				// Set the presentation time to the converted value from the device's clock
 				CMTime hosttimeCM = CMTimeConvertScale(message->mTimingInfo.presentationTimeStamp, 1000000000, kCMTimeRoundingMethod_Default);
 				if (mSyncClock)
@@ -1186,7 +1186,7 @@ namespace CMIO { namespace DP { namespace Sample
 				{
 					DebugMessage("CMIO::DP::Sample::Stream::FrameArrived: presentationTimeStamp is not numeric");
 				}
-				
+
 				// Report its duration
 				mTimingInfo.duration = message->mTimingInfo.duration;
 			}
@@ -1199,11 +1199,11 @@ namespace CMIO { namespace DP { namespace Sample
 				// Report its duration
 				mTimingInfo.duration = message->mTimingInfo.duration;
 			}
-			
+
 			// Update recent timing info
 			UInt32 prevTimingInfoIdx = mRecentTimingInfoIdx;
 			mRecentTimingInfoIdx = (mRecentTimingInfoIdx + 1) & 0x00000001;
-			
+
 			mRecentTimingInfo[ mRecentTimingInfoIdx ].mPTS = mTimingInfo.presentationTimeStamp;
 			mRecentTimingInfo[ mRecentTimingInfoIdx ].mHostTime = message->mHostTime;
 
@@ -1215,8 +1215,8 @@ namespace CMIO { namespace DP { namespace Sample
 
 			// Drive the clock
 			CMIOStreamClockPostTimingEvent(mTimingInfo.presentationTimeStamp, message->mHostTime, mSyncClock, mClock->GetClock());
-			mSyncClock = false;			
-			
+			mSyncClock = false;
+
 
 			CMBlockBufferCustomBlockSource customBlockSource = { kCMBlockBufferCustomBlockSourceVersion, NULL, ReleaseBufferCallback, this };
 
@@ -1225,7 +1225,7 @@ namespace CMIO { namespace DP { namespace Sample
 			void* data = message->mDescriptor.address;
 
 			DebugMessageLevel(2, "CMIO::DP::Sample::Stream::FrameArrived: Frametype = %d discontinuity = %d frameSize = %ld", message->mFrameType, GetDiscontinuityFlags(), frameSize);
-			
+
 			// Wrap the native frame in a block buffer.  kCFAllocatorNull will be used for the block allocator, so no memory will be deallocated when the block buffer goes out of scope.
 			CMA::BlockBuffer blockBuffer(CMA::BlockBuffer::CreateWithMemoryBlock(NULL, data, frameSize, kCFAllocatorNull, &customBlockSource, 0, frameSize, 0));
 
@@ -1237,28 +1237,28 @@ namespace CMIO { namespace DP { namespace Sample
 
 			// Add the "host time" attachment to the buffer
 			CMSetAttachment(buffer, kCMIOSampleBufferAttachmentKey_HostTime, CACFNumber(message->mHostTime).GetCFNumber(), kCMAttachmentMode_ShouldPropagate);
-			
+
 			// Add the "SMPTE time" attachment to the buffer
 			{
-				SMPTETime smpteTime;				
+				SMPTETime smpteTime;
 				smpteTime.mCounter	= mDeck->GetTimecode();
 				smpteTime.mType		= kSMPTETimeType30;
 				smpteTime.mFlags	= kSMPTETimeValid;
-				
+
 				SMPTETimeBase::CalculateSMPTE_HMSFsFromCounter(smpteTime, false);
-				
+
 				// Wrap the SMPTE time stamp and attach it to the buffer
 				CACFData smpteData(CFDataCreate(NULL, reinterpret_cast<UInt8*>(&smpteTime), sizeof(smpteTime)));
 				if (smpteData.IsValid())
 					CMSetAttachment(buffer, kCMIOSampleBufferAttachmentKey_SMPTETime, smpteData.GetCFData(), kCMAttachmentMode_ShouldPropagate);
 			}
-			
+
 			// Put the buffer at the back of the queue
 			mBufferQueue.Enqueue(buffer);
 
 			// The buffer was sucessfully enqueued, so make sure the CMIO::Buffer wrapper won't release the enqueued reference when it goes out of scope
 			buffer.ShouldRelease(false);
-			
+
 			// Clear any accumulated discontinuity flags since the buffer was succesfully enqueued
 			SetDiscontinuityFlags(kCMIOSampleBufferNoDiscontinuities);
 
@@ -1283,7 +1283,7 @@ namespace CMIO { namespace DP { namespace Sample
 	//-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 	// GetOutputBuffer()
 	//-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-	void Stream::GetOutputBuffer(DPA::Sample::OutputBufferRequestedMessage* request) 
+	void Stream::GetOutputBuffer(DPA::Sample::OutputBufferRequestedMessage* request)
 	{
         if (request->mHostTimeInNanos > 0)
         {
@@ -1291,7 +1291,7 @@ namespace CMIO { namespace DP { namespace Sample
 			DebugMessageLevel(3, "DP::Sample::Stream::GetOutputBuffer SendNotification request->mHostTimeInNanos = %lld request->mSequenceNumber = %lld",request->mHostTimeInNanos , request->mLastSequenceNumber);
 			mScheduledOutputNotificationProc->SendNotification(request->mLastSequenceNumber, CAHostTimeBase::ConvertFromNanos(request->mHostTimeInNanos));
         }
-            
+
 		// Setup the invariant portion of the reply message
 		DPA::Sample::OutputBufferMessages reply;
 		reply.asOutputBufferSuppliedMessage.mHeader.msgh_bits			= MACH_MSGH_BITS(MACH_MSGH_BITS_REMOTE(request->mHeader.msgh_bits), 0)  | MACH_MSGH_BITS_COMPLEX;
@@ -1304,10 +1304,10 @@ namespace CMIO { namespace DP { namespace Sample
 		{
 			// Make sure there are buffers available
 			ThrowIf(0 == mBufferQueue.GetCount(), CAException(kCMIOHardwareUnspecifiedError), "CMIO::DP::Sample::Stream::GetOutputBuffer: 0 == mBufferQueue.GetCount()");
-			
+
 			// Get the next buffer to transmit from the queue
 			Buffer buffer(reinterpret_cast<CMSampleBufferRef>(mBufferQueue.Dequeue()));
-			
+
 			// Inform the clients that the queue has been altered
 			if (NULL != mQueueAlteredProc)
 				(mQueueAlteredProc)(GetObjectID(), buffer, mQueueAlteredRefCon);
@@ -1317,110 +1317,24 @@ namespace CMIO { namespace DP { namespace Sample
             if (blockBuffer.IsValid())
             {
                 DebugMessage("DP::Sample::Stream::GetOutputBuffer Blockbuffer is valid");
-               
+
                 // Make sure the size array has only a single entry
                 CMItemCount sizeArrayEntriesCount = 0;
                 buffer.GetSampleSizeArray(0, NULL, &sizeArrayEntriesCount);
                 ThrowIf(1 != sizeArrayEntriesCount, CAException(kCMIODeviceUnsupportedFormatError), "CMIO::DP::Sample::Stream::GetOutputBuffer: sizeArrayEntriesCount is not 1");
-                
+
                 // Make sure the data is ready
                 bool isReady = buffer.DataIsReady();
                 ThrowIf(not isReady, CAException(kCMIODeviceUnsupportedFormatError), "CMIO::DP::Sample::Stream::GetOutputBuffer: data is not ready");
-                
+
                 // Make sure the data length is not zero
                 size_t dataLength = blockBuffer.GetDataLength();
                 ThrowIf(0 == dataLength, CAException(kCMIODeviceUnsupportedFormatError), "CMIO::DP::Sample::Stream::GetOutputBuffer: data length is 0");
-                
+
                 // Make sure the range is contiguous
                 bool isRangeContiguous = blockBuffer.IsRangeContiguous(0, dataLength);
                 ThrowIf(not isRangeContiguous, CAException(kCMIODeviceUnsupportedFormatError), "CMIO::DP::Sample::Stream::GetOutputBuffer: range is not contiguous");
-                
-                CMTime presentationTimeStamp;
-                presentationTimeStamp = CMSampleBufferGetPresentationTimeStamp(buffer.Get());
-                if (CMTIME_IS_VALID(presentationTimeStamp))
-                {
-                    CMTime clockTime = DPA::Sample::CMTimeOverride(request->mClockTime);
-                    if (CMTIME_IS_VALID(clockTime))
-                    {
-                        
-                        DebugMessage("DP::Sample::Stream::DriveOutputClock hostNanos = %lld", request->mHostTimeInNanos);
-                        DriveOutputClock(presentationTimeStamp, clockTime, request->mHostTimeInNanos);
-                    }
-                }
-                else
-                {
-                    DebugMessage("DP::Sample::Stream::GetOutputBuffer invalid presentation timestamp");
-                }
-                
-                // Look for audio
-                CMSampleBufferRef audioSampleBuffer = reinterpret_cast<CMSampleBufferRef>(const_cast<void*>(CMGetAttachment(buffer.Get(), CFSTR(kCMIO_DPA_Sample_AudioSampleBuffer), NULL)));
-                if (audioSampleBuffer)
-                {
-                    // At some point, we will do something with it...
-                    // CFShow(audioSampleBuffer);
-                }
-                
-                SMPTETime theSMPTETime;
-                theSMPTETime.mFlags = 0;
 
-                CFDataRef smpteDataRef = reinterpret_cast<CFDataRef>(const_cast<void *>(CMGetAttachment(buffer.Get(),kCMIOSampleBufferAttachmentKey_SMPTETime,NULL)));
-                if ((NULL != smpteDataRef) && (sizeof(SMPTETime) == CFDataGetLength(smpteDataRef)))
-                {
-                    DebugMessage("DP::Sample::Stream::GetOutputBuffer found SMPTE attachement"); 
-                    CFRange range = { 0, sizeof(SMPTETime) };
-                    
-                    CFDataGetBytes(smpteDataRef, range, reinterpret_cast<UInt8 *>(&(theSMPTETime)));                        
-                }
-                
-                // Inform that we are going to play the buffer
-                // DebugMessage("DP::Sample::Stream::GetOutputBuffer SendNotification request->mHostTimeInNanos = %lld request->mSequenceNumber = %lld", request->mHostTimeInNanos , request->mLastSequenceNumber);
-                
-                // Set the message ID to kOutputBufferSupplied to indicate data is being carried in the payload
-                reply.asOutputBufferSuppliedMessage.mHeader.msgh_size			= sizeof(DPA::Sample::OutputBufferSuppliedMessage);
-                reply.asOutputBufferSuppliedMessage.mHeader.msgh_id				= DPA::Sample::kOutputBufferSupplied;
-                
-                // Indicate one message descriptor will be needed to in this message to describe this buffer
-                reply.asOutputBufferSuppliedMessage.mBody.msgh_descriptor_count	= 1;
-                
-                // Describe the buffer
-                reply.asOutputBufferSuppliedMessage.mDescriptor.address			= blockBuffer.GetDataPointer(0, NULL, NULL);
-                reply.asOutputBufferSuppliedMessage.mDescriptor.size			= (mach_msg_size_t)dataLength;
-                reply.asOutputBufferSuppliedMessage.mDescriptor.deallocate		= false;
-                reply.asOutputBufferSuppliedMessage.mDescriptor.copy			= MACH_MSG_VIRTUAL_COPY;
-                reply.asOutputBufferSuppliedMessage.mDescriptor.pad1			= 0;
-                reply.asOutputBufferSuppliedMessage.mDescriptor.type			= MACH_MSG_OOL_DESCRIPTOR;
-                reply.asOutputBufferSuppliedMessage.mSequenceNumber             = CMIOSampleBufferGetSequenceNumber(buffer.Get());
-                reply.asOutputBufferSuppliedMessage.mDiscontinuityFlags         = CMIOSampleBufferGetDiscontinuityFlags(buffer.Get());
-                reply.asOutputBufferSuppliedMessage.mSMPTETime                  = theSMPTETime;
-                
-                //            DebugMessage("DP::Sample::Stream::GetOutputBuffer reply.asOutputBufferSuppliedMessage.mSequenceNumber = %lld",reply.asOutputBufferSuppliedMessage.mSequenceNumber);
-//                DebugMessage("DP::Sample::Stream::GetOutputBuffer reply.asOutputBufferSuppliedMessage.mSequenceNumber = %lld\n",reply.asOutputBufferSuppliedMessage.mSequenceNumber);
-//                DebugMessage("DP::Sample::Stream::GetOutputBuffer reply.asOutputBufferSuppliedMessageSMPTETime.mCounter = %ld",reply.asOutputBufferSuppliedMessage.mSMPTETime.mCounter); 
-//                DebugMessage("DP::Sample::Stream::GetOutputBuffer reply.asOutputBufferSuppliedMessageSMPTETime.mHours = %ld",reply.asOutputBufferSuppliedMessage.mSMPTETime.mHours); 
-//                DebugMessage("DP::Sample::Stream::GetOutputBuffer reply.asOutputBufferSuppliedMessageSMPTETime.minutes = %ld",reply.asOutputBufferSuppliedMessage.mSMPTETime.mMinutes); 
-//                DebugMessage("DP::Sample::Stream::GetOutputBuffer reply.asOutputBufferSuppliedMessageSMPTETime.mSeconds = %ld",reply.asOutputBufferSuppliedMessage.mSMPTETime.mSeconds); 
-//                DebugMessage("DP::Sample::Stream::GetOutputBuffer reply.asOutputBufferSuppliedMessageSMPTETime.mFrames = %ld",reply.asOutputBufferSuppliedMessage.mSMPTETime.mFrames); 
-                
-                // Send the reply
-                mach_msg_return_t err = mach_msg(&(reply.asOutputBufferSuppliedMessage.mHeader), MACH_SEND_MSG, reply.asOutputBufferSuppliedMessage.mHeader.msgh_size, 0, MACH_PORT_NULL, MACH_MSG_TIMEOUT_NONE, MACH_PORT_NULL);
-                if (MACH_MSG_SUCCESS != err)
-                {
-                    DebugMessage("DP::Sample::Stream::GetOutputBuffer: mach_msg() failed - error: 0x%X (%s)", err, mach_error_string(err));
-                }
-            }
-            else
-            {
-                DebugMessage("DP::Sample::Stream::GetOutputBuffer trying pixelBuffer");
-                
-                // Get the underlying pixel buffer (no need to release it since it is maintained by 'buffer')
-                CVA::Pixel::Buffer pixelBuffer(buffer.GetImageBuffer(), false, false);
-				ThrowIf(not pixelBuffer.IsValid(), CAException(kCMIOHardwareUnspecifiedError), "CMIO::DP::Sample::Stream::GetOutputBuffer: buffer is not valid");
-                
-				// Make sure the format is supported
-                OSType format = CVPixelBufferGetPixelFormatType(pixelBuffer);
-                ThrowIf((kCMPixelFormat_422YpCbCr8 != format) and (kCMPixelFormat_422YpCbCr10 != format), CAException(kCMIODeviceUnsupportedFormatError), "CMIO::DP::Sample::Stream::GetOutputBuffer: only kCMPixelFormat_422YpCbCr8 or kCMPixelFormat_422YpCbCr10 supported");
-                
-				// Drive the output clock
                 CMTime presentationTimeStamp;
                 presentationTimeStamp = CMSampleBufferGetPresentationTimeStamp(buffer.Get());
                 if (CMTIME_IS_VALID(presentationTimeStamp))
@@ -1428,7 +1342,7 @@ namespace CMIO { namespace DP { namespace Sample
                     CMTime clockTime = DPA::Sample::CMTimeOverride(request->mClockTime);
                     if (CMTIME_IS_VALID(clockTime))
                     {
-                        
+
                         DebugMessage("DP::Sample::Stream::DriveOutputClock hostNanos = %lld", request->mHostTimeInNanos);
                         DriveOutputClock(presentationTimeStamp, clockTime, request->mHostTimeInNanos);
                     }
@@ -1437,7 +1351,7 @@ namespace CMIO { namespace DP { namespace Sample
                 {
                     DebugMessage("DP::Sample::Stream::GetOutputBuffer invalid presentation timestamp");
                 }
-                
+
                 // Look for audio
                 CMSampleBufferRef audioSampleBuffer = reinterpret_cast<CMSampleBufferRef>(const_cast<void*>(CMGetAttachment(buffer.Get(), CFSTR(kCMIO_DPA_Sample_AudioSampleBuffer), NULL)));
                 if (audioSampleBuffer)
@@ -1453,30 +1367,116 @@ namespace CMIO { namespace DP { namespace Sample
                 if ((NULL != smpteDataRef) && (sizeof(SMPTETime) == CFDataGetLength(smpteDataRef)))
                 {
                     DebugMessage("DP::Sample::Stream::GetOutputBuffer found SMPTE attachement");
-                    
                     CFRange range = { 0, sizeof(SMPTETime) };
-                    
+
                     CFDataGetBytes(smpteDataRef, range, reinterpret_cast<UInt8 *>(&(theSMPTETime)));
                 }
-                   
+
+                // Inform that we are going to play the buffer
+                // DebugMessage("DP::Sample::Stream::GetOutputBuffer SendNotification request->mHostTimeInNanos = %lld request->mSequenceNumber = %lld", request->mHostTimeInNanos , request->mLastSequenceNumber);
+
+                // Set the message ID to kOutputBufferSupplied to indicate data is being carried in the payload
+                reply.asOutputBufferSuppliedMessage.mHeader.msgh_size			= sizeof(DPA::Sample::OutputBufferSuppliedMessage);
+                reply.asOutputBufferSuppliedMessage.mHeader.msgh_id				= DPA::Sample::kOutputBufferSupplied;
+
+                // Indicate one message descriptor will be needed to in this message to describe this buffer
+                reply.asOutputBufferSuppliedMessage.mBody.msgh_descriptor_count	= 1;
+
+                // Describe the buffer
+                reply.asOutputBufferSuppliedMessage.mDescriptor.address			= blockBuffer.GetDataPointer(0, NULL, NULL);
+                reply.asOutputBufferSuppliedMessage.mDescriptor.size			= (mach_msg_size_t)dataLength;
+                reply.asOutputBufferSuppliedMessage.mDescriptor.deallocate		= false;
+                reply.asOutputBufferSuppliedMessage.mDescriptor.copy			= MACH_MSG_VIRTUAL_COPY;
+                reply.asOutputBufferSuppliedMessage.mDescriptor.pad1			= 0;
+                reply.asOutputBufferSuppliedMessage.mDescriptor.type			= MACH_MSG_OOL_DESCRIPTOR;
+                reply.asOutputBufferSuppliedMessage.mSequenceNumber             = CMIOSampleBufferGetSequenceNumber(buffer.Get());
+                reply.asOutputBufferSuppliedMessage.mDiscontinuityFlags         = CMIOSampleBufferGetDiscontinuityFlags(buffer.Get());
+                reply.asOutputBufferSuppliedMessage.mSMPTETime                  = theSMPTETime;
+
+                //            DebugMessage("DP::Sample::Stream::GetOutputBuffer reply.asOutputBufferSuppliedMessage.mSequenceNumber = %lld",reply.asOutputBufferSuppliedMessage.mSequenceNumber);
+//                DebugMessage("DP::Sample::Stream::GetOutputBuffer reply.asOutputBufferSuppliedMessage.mSequenceNumber = %lld\n",reply.asOutputBufferSuppliedMessage.mSequenceNumber);
+//                DebugMessage("DP::Sample::Stream::GetOutputBuffer reply.asOutputBufferSuppliedMessageSMPTETime.mCounter = %ld",reply.asOutputBufferSuppliedMessage.mSMPTETime.mCounter);
+//                DebugMessage("DP::Sample::Stream::GetOutputBuffer reply.asOutputBufferSuppliedMessageSMPTETime.mHours = %ld",reply.asOutputBufferSuppliedMessage.mSMPTETime.mHours);
+//                DebugMessage("DP::Sample::Stream::GetOutputBuffer reply.asOutputBufferSuppliedMessageSMPTETime.minutes = %ld",reply.asOutputBufferSuppliedMessage.mSMPTETime.mMinutes);
+//                DebugMessage("DP::Sample::Stream::GetOutputBuffer reply.asOutputBufferSuppliedMessageSMPTETime.mSeconds = %ld",reply.asOutputBufferSuppliedMessage.mSMPTETime.mSeconds);
+//                DebugMessage("DP::Sample::Stream::GetOutputBuffer reply.asOutputBufferSuppliedMessageSMPTETime.mFrames = %ld",reply.asOutputBufferSuppliedMessage.mSMPTETime.mFrames);
+
+                // Send the reply
+                mach_msg_return_t err = mach_msg(&(reply.asOutputBufferSuppliedMessage.mHeader), MACH_SEND_MSG, reply.asOutputBufferSuppliedMessage.mHeader.msgh_size, 0, MACH_PORT_NULL, MACH_MSG_TIMEOUT_NONE, MACH_PORT_NULL);
+                if (MACH_MSG_SUCCESS != err)
+                {
+                    DebugMessage("DP::Sample::Stream::GetOutputBuffer: mach_msg() failed - error: 0x%X (%s)", err, mach_error_string(err));
+                }
+            }
+            else
+            {
+                DebugMessage("DP::Sample::Stream::GetOutputBuffer trying pixelBuffer");
+
+                // Get the underlying pixel buffer (no need to release it since it is maintained by 'buffer')
+                CVA::Pixel::Buffer pixelBuffer(buffer.GetImageBuffer(), false, false);
+				ThrowIf(not pixelBuffer.IsValid(), CAException(kCMIOHardwareUnspecifiedError), "CMIO::DP::Sample::Stream::GetOutputBuffer: buffer is not valid");
+
+				// Make sure the format is supported
+                OSType format = CVPixelBufferGetPixelFormatType(pixelBuffer);
+                ThrowIf((kCMPixelFormat_422YpCbCr8 != format) and (kCMPixelFormat_422YpCbCr10 != format), CAException(kCMIODeviceUnsupportedFormatError), "CMIO::DP::Sample::Stream::GetOutputBuffer: only kCMPixelFormat_422YpCbCr8 or kCMPixelFormat_422YpCbCr10 supported");
+
+				// Drive the output clock
+                CMTime presentationTimeStamp;
+                presentationTimeStamp = CMSampleBufferGetPresentationTimeStamp(buffer.Get());
+                if (CMTIME_IS_VALID(presentationTimeStamp))
+                {
+                    CMTime clockTime = DPA::Sample::CMTimeOverride(request->mClockTime);
+                    if (CMTIME_IS_VALID(clockTime))
+                    {
+
+                        DebugMessage("DP::Sample::Stream::DriveOutputClock hostNanos = %lld", request->mHostTimeInNanos);
+                        DriveOutputClock(presentationTimeStamp, clockTime, request->mHostTimeInNanos);
+                    }
+                }
+                else
+                {
+                    DebugMessage("DP::Sample::Stream::GetOutputBuffer invalid presentation timestamp");
+                }
+
+                // Look for audio
+                CMSampleBufferRef audioSampleBuffer = reinterpret_cast<CMSampleBufferRef>(const_cast<void*>(CMGetAttachment(buffer.Get(), CFSTR(kCMIO_DPA_Sample_AudioSampleBuffer), NULL)));
+                if (audioSampleBuffer)
+                {
+                    // At some point, we will do something with it...
+                    // CFShow(audioSampleBuffer);
+                }
+
+                SMPTETime theSMPTETime;
+                theSMPTETime.mFlags = 0;
+
+                CFDataRef smpteDataRef = reinterpret_cast<CFDataRef>(const_cast<void *>(CMGetAttachment(buffer.Get(),kCMIOSampleBufferAttachmentKey_SMPTETime,NULL)));
+                if ((NULL != smpteDataRef) && (sizeof(SMPTETime) == CFDataGetLength(smpteDataRef)))
+                {
+                    DebugMessage("DP::Sample::Stream::GetOutputBuffer found SMPTE attachement");
+
+                    CFRange range = { 0, sizeof(SMPTETime) };
+
+                    CFDataGetBytes(smpteDataRef, range, reinterpret_cast<UInt8 *>(&(theSMPTETime)));
+                }
+
 				// Make sure the format is supported
                 IOSurfaceRef backingSurface = CVPixelBufferGetIOSurface(pixelBuffer);
                 if(backingSurface == NULL)
                 {
                     // Lock the base address
                     pixelBuffer.LockBaseAddress(kCVPixelBufferLock_ReadOnly);
-                    
-                    
+
+
                     // Inform that we are going to play the buffer
                     //            DebugMessage("DP::Sample::Stream::GetOutputBuffer SendNotification request->mHostTimeInNanos = %lld request->mSequenceNumber = %lld",request->mHostTimeInNanos , request->mLastSequenceNumber);
-                    
+
                     // Set the message ID to kOutputBufferSupplied to indicate data is being carried in the payload
                     reply.asOutputBufferSuppliedMessage.mHeader.msgh_size			= sizeof(DPA::Sample::OutputBufferSuppliedMessage);
                     reply.asOutputBufferSuppliedMessage.mHeader.msgh_id				= DPA::Sample::kOutputBufferSupplied;
-                    
+
                     // Indicate one message descriptor will be needed to in this message to describe this buffer
                     reply.asOutputBufferSuppliedMessage.mBody.msgh_descriptor_count	= 1;
-                    
+
                     // Describe the buffer
                     reply.asOutputBufferSuppliedMessage.mDescriptor.address			= CVPixelBufferGetBaseAddress(pixelBuffer);
                     reply.asOutputBufferSuppliedMessage.mDescriptor.size			= (mach_msg_size_t)(CVPixelBufferGetHeight(pixelBuffer) * CVPixelBufferGetBytesPerRow(pixelBuffer));
@@ -1487,10 +1487,10 @@ namespace CMIO { namespace DP { namespace Sample
                     reply.asOutputBufferSuppliedMessage.mSequenceNumber             = CMIOSampleBufferGetSequenceNumber(buffer.Get());
                     reply.asOutputBufferSuppliedMessage.mDiscontinuityFlags         = CMIOSampleBufferGetDiscontinuityFlags(buffer.Get());
                     reply.asOutputBufferSuppliedMessage.mSMPTETime                  = theSMPTETime;
-                    
-                    
+
+
                     DebugMessage("DP::Sample::Stream::GetOutputBuffer reply.asOutputBufferSuppliedMessage.mSequenceNumber = %lld disconinuity = %x", reply.asOutputBufferSuppliedMessage.mSequenceNumber, reply.asOutputBufferSuppliedMessage.mDiscontinuityFlags);
-                    
+
                     //            DebugMessage("DP::Sample::Stream::GetOutputBuffer reply.asOutputBufferSuppliedMessage.mSequenceNumber = %lld",reply.asOutputBufferSuppliedMessage.mSequenceNumber);
                     //               DebugMessage("DP::Sample::Stream::GetOutputBuffer reply.asOutputBufferSuppliedMessage.mSequenceNumber = %lld disconinuity = %x",reply.asOutputBufferSuppliedMessage.mSequenceNumber,reply.asOutputBufferSuppliedMessage.mDiscontinuityFlags);
                     //                DebugMessage("DP::Sample::Stream::GetOutputBuffer reply.asOutputBufferSuppliedMessage.mSequenceNumber = %lld\n",reply.asOutputBufferSuppliedMessage.mSequenceNumber);
@@ -1499,44 +1499,44 @@ namespace CMIO { namespace DP { namespace Sample
                     //                DebugMessage("DP::Sample::Stream::GetOutputBuffer reply.asOutputBufferSuppliedMessageSMPTETime.minutes = %ld",reply.asOutputBufferSuppliedMessage.mSMPTETime.mMinutes);
                     //                DebugMessage("DP::Sample::Stream::GetOutputBuffer reply.asOutputBufferSuppliedMessageSMPTETime.mSeconds = %ld",reply.asOutputBufferSuppliedMessage.mSMPTETime.mSeconds);
                     //                DebugMessage("DP::Sample::Stream::GetOutputBuffer reply.asOutputBufferSuppliedMessageSMPTETime.mFrames = %ld",reply.asOutputBufferSuppliedMessage.mSMPTETime.mFrames);
-                    
+
                     // Send the reply
                     mach_msg_return_t err = mach_msg(&(reply.asOutputBufferSuppliedMessage.mHeader), MACH_SEND_MSG, reply.asOutputBufferSuppliedMessage.mHeader.msgh_size, 0, MACH_PORT_NULL, MACH_MSG_TIMEOUT_NONE, MACH_PORT_NULL);
                     if (MACH_MSG_SUCCESS != err)
                     {
                         DebugMessage("DP::Sample::Stream::GetOutputBuffer: mach_msg() failed - error: 0x%X (%s)", err, mach_error_string(err));
                     }
-                    
+
                     // Unlock the base address
                     (void) CVPixelBufferUnlockBaseAddress(pixelBuffer, kCVPixelBufferLock_ReadOnly);
                 }
                 else
                 {
                     DebugMessage("DP::Sample::Stream::GetOutputBuffer found IOSurface");
-                    
+
                     // Inform that we are going to play the buffer
                     //            DebugMessage("DP::Sample::Stream::GetOutputBuffer SendNotification request->mHostTimeInNanos = %lld request->mSequenceNumber = %lld",request->mHostTimeInNanos , request->mLastSequenceNumber);
-                    
+
                     // Set the message ID to kOutputBufferSupplied to indicate data is being carried in the payload
                     reply.asOutputSurfaceSuppliedMessage.mHeader.msgh_size			= sizeof(DPA::Sample::OutputSurfaceSuppliedMessage);
                     reply.asOutputSurfaceSuppliedMessage.mHeader.msgh_id			= DPA::Sample::kOutputSurfaceSupplied;
-                    
+
                     // Indicate one message descriptor will be needed to in this message to describe this buffer
                     reply.asOutputBufferSuppliedMessage.mBody.msgh_descriptor_count	= 1;
-                    
+
                     // Describe the buffer
                     reply.asOutputSurfaceSuppliedMessage.mDescriptor.name           = IOSurfaceCreateMachPort(CVPixelBufferGetIOSurface(pixelBuffer.Get()));
                     reply.asOutputSurfaceSuppliedMessage.mDescriptor.disposition	= MACH_MSG_TYPE_MOVE_SEND;
                     reply.asOutputSurfaceSuppliedMessage.mDescriptor.type           = MACH_MSG_PORT_DESCRIPTOR;
 
-                    
+
                     reply.asOutputSurfaceSuppliedMessage.mSequenceNumber             = CMIOSampleBufferGetSequenceNumber(buffer.Get());
                     reply.asOutputSurfaceSuppliedMessage.mDiscontinuityFlags         = CMIOSampleBufferGetDiscontinuityFlags(buffer.Get());
                     reply.asOutputSurfaceSuppliedMessage.mSMPTETime                  = theSMPTETime;
-                    
-                    
+
+
                     DebugMessage("DP::Sample::Stream::GetOutputBuffer reply.asOutputSurfaceSuppliedMessage.mSequenceNumber = %lld disconinuity = %x", reply.asOutputSurfaceSuppliedMessage.mSequenceNumber, reply.asOutputSurfaceSuppliedMessage.mDiscontinuityFlags);
-                    
+
                     //            DebugMessage("DP::Sample::Stream::GetOutputBuffer reply.asOutputSurfaceSuppliedMessage.mSequenceNumber = %lld",reply.asOutputSurfaceSuppliedMessage.mSequenceNumber);
                     //               DebugMessage("DP::Sample::Stream::GetOutputBuffer reply.asOutputSurfaceSuppliedMessage.mSequenceNumber = %lld disconinuity = %x",reply.asOutputSurfaceSuppliedMessage.mSequenceNumber,reply.asOutputSurfaceSuppliedMessage.mDiscontinuityFlags);
                     //                DebugMessage("DP::Sample::Stream::GetOutputBuffer reply.asOutputSurfaceSuppliedMessage.mSequenceNumber = %lld\n",reply.asOutputSurfaceSuppliedMessage.mSequenceNumber);
@@ -1545,7 +1545,7 @@ namespace CMIO { namespace DP { namespace Sample
                     //                DebugMessage("DP::Sample::Stream::GetOutputBuffer reply.asOutputSurfaceSuppliedMessageSMPTETime.minutes = %ld",reply.asOutputSurfaceSuppliedMessage.mSMPTETime.mMinutes);
                     //                DebugMessage("DP::Sample::Stream::GetOutputBuffer reply.asOutputSurfaceSuppliedMessageSMPTETime.mSeconds = %ld",reply.asOutputSurfaceSuppliedMessage.mSMPTETime.mSeconds);
                     //                DebugMessage("DP::Sample::Stream::GetOutputBuffer reply.asOutputSurfaceSuppliedMessageSMPTETime.mFrames = %ld",reply.asOutputSurfaceSuppliedMessage.mSMPTETime.mFrames);
-                    
+
                     // Send the reply
                     mach_msg_return_t err = mach_msg(&(reply.asOutputSurfaceSuppliedMessage.mHeader), MACH_SEND_MSG, reply.asOutputSurfaceSuppliedMessage.mHeader.msgh_size, 0, MACH_PORT_NULL, MACH_MSG_TIMEOUT_NONE, MACH_PORT_NULL);
                     if (MACH_MSG_SUCCESS != err)
@@ -1562,7 +1562,7 @@ namespace CMIO { namespace DP { namespace Sample
 			// Set the message ID to kNoOutputBufferSupplied to indicate there are NO buffers in the payload
 			reply.asNoOutputBufferSuppliedMessage.mHeader.msgh_size			= sizeof(DPA::Sample::NoOutputBufferSuppliedMessage);
 			reply.asNoOutputBufferSuppliedMessage.mHeader.msgh_id			= DPA::Sample::kNoOutputBufferSupplied;
-			
+
 			// Send the reply
 			mach_msg_return_t err = mach_msg(&(reply.asNoOutputBufferSuppliedMessage.mHeader), MACH_SEND_MSG, reply.asNoOutputBufferSuppliedMessage.mHeader.msgh_size, 0, MACH_PORT_NULL, MACH_MSG_TIMEOUT_NONE, MACH_PORT_NULL);
 			if (MACH_MSG_SUCCESS != err)
@@ -1570,7 +1570,7 @@ namespace CMIO { namespace DP { namespace Sample
 				DebugMessage("DP::Sample::Stream::GetOutputBuffer: mach_msg() failed - error: 0x%X (%s)", err, mach_error_string(err));
 			}
 		}
-	}	
+	}
 
 	#pragma mark -
 	//-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -1612,18 +1612,18 @@ namespace CMIO { namespace DP { namespace Sample
 	CMIOStreamDeck Stream::StreamDeckOneShot(DP::Stream& stream)
 	{
 		Stream& sampleStream = static_cast<Stream&>(stream);
-		return DPA::Sample::GetDeck(sampleStream.GetOwningDevice().GetAssistantPort(), sampleStream.GetOwningDevice().GetDeviceGUID(), sampleStream.GetDevicePropertyScope(), sampleStream.GetStartingDeviceChannelNumber()); 
+		return DPA::Sample::GetDeck(sampleStream.GetOwningDevice().GetAssistantPort(), sampleStream.GetOwningDevice().GetDeviceGUID(), sampleStream.GetDevicePropertyScope(), sampleStream.GetStartingDeviceChannelNumber());
 	}
-	
+
 	//-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 	// TimeCodeOneShot()
 	//-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 	Float64 Stream::TimeCodeOneShot(DP::Stream& stream)
 	{
 		Stream& sampleStream = static_cast<Stream&>(stream);
-		return DPA::Sample::GetDeckTimecode(sampleStream.GetOwningDevice().GetAssistantPort(), sampleStream.GetOwningDevice().GetDeviceGUID(), sampleStream.GetDevicePropertyScope(), sampleStream.GetStartingDeviceChannelNumber()); 
+		return DPA::Sample::GetDeckTimecode(sampleStream.GetOwningDevice().GetAssistantPort(), sampleStream.GetOwningDevice().GetDeviceGUID(), sampleStream.GetDevicePropertyScope(), sampleStream.GetStartingDeviceChannelNumber());
 	}
-	
+
 	//-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 	// DropnessOneShot()
 	//-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -1631,9 +1631,9 @@ namespace CMIO { namespace DP { namespace Sample
 	{
 		return 1;
 		//Stream& avcStream = static_cast<Stream&>(stream);
-		//return DPA::AVC::GetDeckThreaded(avcStream.GetOwningDevice().GetAssistantPort(), avcStream.GetOwningDevice().GetDeviceGUID(), avcStream.GetDevicePropertyScope(), 1); 
+		//return DPA::AVC::GetDeckThreaded(avcStream.GetOwningDevice().GetAssistantPort(), avcStream.GetOwningDevice().GetDeviceGUID(), avcStream.GetDevicePropertyScope(), 1);
 	}
-	
+
 	//-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 	// ThreadedOneShot()
 	//-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -1641,9 +1641,9 @@ namespace CMIO { namespace DP { namespace Sample
 	{
 		return 1;
 		// Stream& sampleStream = static_cast<Stream&>(stream);
-		// return DPA::AVC::GetDeckThreaded(sampleStream.GetOwningDevice().GetAssistantPort(), sampleStream.GetOwningDevice().GetDeviceGUID(), sampleStream.GetDevicePropertyScope(), 1); 
+		// return DPA::AVC::GetDeckThreaded(sampleStream.GetOwningDevice().GetAssistantPort(), sampleStream.GetOwningDevice().GetDeviceGUID(), sampleStream.GetDevicePropertyScope(), 1);
 	}
-	
+
 	//-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 	// LocalOneShot()
 	//-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -1651,18 +1651,18 @@ namespace CMIO { namespace DP { namespace Sample
 	{
 		return 1;
 		//Stream& sampleStream = static_cast<Stream&>(stream);
-		//return DPA::AVC::GetDeckLocal(sampleStream.GetOwningDevice().GetAssistantPort(), sampleStream.GetOwningDevice().GetDeviceGUID(), sampleStream.GetDevicePropertyScope(), 1); 
+		//return DPA::AVC::GetDeckLocal(sampleStream.GetOwningDevice().GetAssistantPort(), sampleStream.GetOwningDevice().GetDeviceGUID(), sampleStream.GetDevicePropertyScope(), 1);
 	}
-	
+
 	//-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 	// CueingOneShot()
 	//-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 	SInt32 Stream::CueingOneShot(DP::Stream& stream)
 	{
 		Stream& sampleStream = static_cast<Stream&>(stream);
-		return DPA::Sample::GetDeckCueing(sampleStream.GetOwningDevice().GetAssistantPort(), sampleStream.GetOwningDevice().GetDeviceGUID(), sampleStream.GetDevicePropertyScope(), sampleStream.GetStartingDeviceChannelNumber()); 
+		return DPA::Sample::GetDeckCueing(sampleStream.GetOwningDevice().GetAssistantPort(), sampleStream.GetOwningDevice().GetDeviceGUID(), sampleStream.GetDevicePropertyScope(), sampleStream.GetStartingDeviceChannelNumber());
 	}
-	
+
 	#pragma mark -
 	//-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 	// CueComplete()
@@ -1671,7 +1671,7 @@ namespace CMIO { namespace DP { namespace Sample
 	{
 		mDeck->SetCueing(cueStatus);
 	}
-	
+
 	//-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 	// TimecodeChanged()
 	//-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -1679,20 +1679,20 @@ namespace CMIO { namespace DP { namespace Sample
 	{
 		mDeck->SetTimecode(timecode);
 	}
-	
+
 	//-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 	// StreamDeckChanged()
 	//-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 	void Stream::StreamDeckChanged(UInt32 changed, UInt16 opcode, UInt16 operand)
 	{
         DebugMessage("CMIO::DP::Sample::Stream::StreamDeckChanged: changed = %d opcode = %d operand = %d", changed, opcode, operand);
-		
+
         CMIOStreamDeck streamDeck;
-		
+
 		streamDeck.mStatus = changed;
 		streamDeck.mState = opcode;
 		streamDeck.mState2 = operand;
-		
+
 		mDeck->SetStreamDeck(streamDeck);
 	}
 }}}

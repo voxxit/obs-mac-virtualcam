@@ -2,7 +2,7 @@
 	    File: CMIO_DPA_Sample_Server_VCamDevice.cpp
 	Abstract: n/a
 	 Version: 1.2
- 
+
 */
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -27,9 +27,9 @@ namespace CMIO { namespace DPA { namespace Sample { namespace Server
         Device()
 	{
 		CreateStreams();
-        mFrameSize = 720 * 480 * 2;
+        mFrameSize = 1920 * 1080 * 2;
 	}
-	
+
 	//-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 	// ~VCamDevice()
 	//-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -44,12 +44,12 @@ namespace CMIO { namespace DPA { namespace Sample { namespace Server
 	void VCamDevice::CreateStreams()
 	{
         UInt32 streamID = 0;
-        
+
         CACFDictionary format;
-        format.AddUInt32(CFSTR(kIOVideoStreamFormatKey_CodecType), kYUV422_720x480);
+        format.AddUInt32(CFSTR(kIOVideoStreamFormatKey_CodecType), kYUV422_1920x1080);
         format.AddUInt32(CFSTR(kIOVideoStreamFormatKey_CodecFlags), kSampleCodecFlags_30fps | kSampleCodecFlags_1001_1000_adjust);
-        format.AddUInt32(CFSTR(kIOVideoStreamFormatKey_Width), 720);
-        format.AddUInt32(CFSTR(kIOVideoStreamFormatKey_Height), 480);
+        format.AddUInt32(CFSTR(kIOVideoStreamFormatKey_Width), 1920);
+        format.AddUInt32(CFSTR(kIOVideoStreamFormatKey_Height), 1080);
 
         CACFArray formats;
         formats.AppendDictionary(format.GetDict());
